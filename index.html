@@ -16,9 +16,14 @@ body {
     margin: 0;
     overflow-x: hidden;
     position: relative;
+    transition: background 0.5s ease;
 }
 
-/* ပျောက်ကြားပုံစံ ပေါ်လိုက်ပျောက်လိုက်နဲ့ နေရာပါရွေ့မယ့် ကွန်တိန်နာ */
+body.room-active {
+    background: linear-gradient(135deg, #2b091e, #4a1535, #1f0515);
+    box-shadow: inset 0 0 100px rgba(255, 0, 127, 0.5);
+}
+
 .floating-container {
     position: absolute;
     width: 100%;
@@ -39,23 +44,23 @@ body {
 }
 
 .floating-photo {
-    width: 65px;
-    height: 65px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     object-fit: cover;
     user-select: none;
 }
 
 .photo-emoji {
-    font-size: 20px;
+    font-size: 22px;
     margin-bottom: 4px;
     filter: drop-shadow(0 0 8px #00ffff);
 }
 
 @keyframes glitchFadeMove {
     0% { opacity: 0.2; transform: translate(0, 0) scale(0.8); }
-    50% { opacity: 1; transform: translate(60px, -40px) scale(1.1); }
-    100% { opacity: 0.3; transform: translate(-50px, 50px) scale(0.9); }
+    50% { opacity: 1; transform: translate(50px, -30px) scale(1.1); }
+    100% { opacity: 0.3; transform: translate(-40px, 40px) scale(0.9); }
 }
 
 .border-cyan { border: 3px solid #00ffff; box-shadow: 0 0 15px #00ffff, inset 0 0 8px #00ffff; }
@@ -65,38 +70,37 @@ body {
 .border-purple { border: 3px solid #bf00ff; box-shadow: 0 0 15px #bf00ff, inset 0 0 8px #bf00ff; }
 .border-pink { border: 3px solid #ff007f; box-shadow: 0 0 15px #ff007f, inset 0 0 8px #ff007f; }
 
-/* ကဒ်နောက်ခံဖျောက်ထားပြီး စာတန်းများနှင့် ခလုတ်များနေရာ (ဗဟိုချက်) */
 .content-box {
     text-align: center;
     position: relative;
     z-index: 10;
-    padding: 10px 20px;
+    padding: 10px 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    width: 380px;
-    max-width: 90%;
+    width: 360px;
+    max-width: 92%;
     box-sizing: border-box;
 }
 
 .main-title {
     color: #00ffff;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 900;
-    margin: 0;
-    text-shadow: 0 0 20px #00ffff, 0 0 10px #ffffff, 0 0 30px #00ffff;
+    margin: 0 0 2px 0;
+    text-shadow: 0 0 20px #00ffff, 0 0 10px #ffffff;
     letter-spacing: 0.5px;
     white-space: nowrap;
 }
 
 .love-quote {
     color: #ffcc00;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 900;
-    margin: 0 0 10px 0;
-    text-shadow: 0 0 20px #ffcc00, 0 0 10px #ff6600, 0 0 30px #ffcc00;
+    margin: 0 0 8px 0;
+    text-shadow: 0 0 20px #ffcc00, 0 0 10px #ff6600;
     letter-spacing: 0.5px;
     white-space: nowrap;
 }
@@ -115,7 +119,7 @@ body {
     padding: 10px;
     border-radius: 12px;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 900;
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 8px #39ff14;
     transition: 0.2s;
@@ -125,7 +129,6 @@ body {
 
 .primary-btn:hover {
     transform: scale(1.03);
-    box-shadow: 0 0 40px #00ffff, 0 0 20px #ffffff;
 }
 
 .music-btn {
@@ -135,34 +138,28 @@ body {
     padding: 6px;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: bold;
     width: 100%;
     box-sizing: border-box;
     box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-    transition: 0.2s;
-}
-
-.music-btn:hover {
-    background: rgba(0, 255, 255, 0.1);
 }
 
 .game-title {
     color: #ffcc00;
-    margin-bottom: 10px;
-    font-size: 20px;
+    margin-bottom: 8px;
+    font-size: 18px;
     font-weight: 900;
     text-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
 }
 
-/* မေးခွန်းနေရာကို နောက်ခံအမည်းရောင် သေသပ်သည့်ဘောင်အပိတ်ပုံစံ ပြောင်းထားခြင်း */
 .question-box {
-    font-size: 16px;
+    font-size: 15px;
     color: #ffffff;
     background: rgba(13, 27, 42, 0.95);
-    padding: 15px;
+    padding: 12px 14px;
     border-radius: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     min-height: 45px;
     display: flex;
     align-items: center;
@@ -177,223 +174,245 @@ body {
 .choices-container {
     display: flex;
     justify-content: space-around;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     width: 100%;
+    gap: 10px;
 }
 
 .choice-card {
     cursor: pointer;
-    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.choice-card:hover {
-    transform: scale(1.08);
+.avatar-container {
+    position: relative;
+    width: 110px;
+    height: 175px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.choice-card img {
-    width: 90px;
+/* ခေါင်းက လုံးဝငြိမ်နေစေရန် (Head remains stable) */
+.heart-head {
+    width: 95px;
     height: 90px;
-    border-radius: 50%;
     object-fit: cover;
-    border: 4px solid #ffcc00;
-    box-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
+    clip-path: path('M47.5,85 C47.5,85 10,58 10,32 C10,15 21,7 34,7 C43,7 47.5,14 47.5,14 C47.5,14 52,7 61,7 C74,7 85,15 85,32 C85,58 47.5,85 47.5,85 Z');
+    padding: 3px;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+.cartoon-body-full {
+    position: absolute;
+    top: 78px;
+    width: 100px;
+    height: 90px;
+    z-index: 1;
+}
+
+/* လက်နှင့် ခြေထောက်များသာ သီးသန့် ကခုန်လှုပ်ရှားနေမည့် အန်နီမေးရှင်းများ */
+.left-arm {
+    animation: danceLeftArm 0.6s ease-in-out infinite alternate;
+    transform-origin: 35px 12px;
+}
+
+.right-arm {
+    animation: danceRightArm 0.6s ease-in-out infinite alternate;
+    transform-origin: 65px 12px;
+}
+
+.left-leg {
+    animation: danceLeftLeg 0.6s ease-in-out infinite alternate;
+    transform-origin: 39px 52px;
+}
+
+.right-leg {
+    animation: danceRightLeg 0.6s ease-in-out infinite alternate;
+    transform-origin: 61px 52px;
+}
+
+@keyframes danceLeftArm {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-25deg) translateY(-3px); }
+}
+
+@keyframes danceRightArm {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(25deg) translateY(-3px); }
+}
+
+@keyframes danceLeftLeg {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(15deg); }
+}
+
+@keyframes danceRightLeg {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-15deg); }
 }
 
 .choice-card p {
-    margin-top: 5px;
+    margin-top: 4px;
     font-weight: bold;
     color: #ffcc00;
-    text-shadow: 0 0 8px rgba(255, 204, 0, 0.5);
+    font-size: 14px;
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
 }
 
-/* အဖြေပေါ်လာတဲ့အခါမှ လုံးဝလန်းပြီး ရှင်းလင်းတောက်ပမယ့် နောက်ခံဘောင်နှင့် စာသားစတိုင် */
 .result-box {
-    font-size: 15px;
+    font-size: 14px;
     color: #ffffff;
     font-weight: 900;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     min-height: 25px;
-    text-shadow: 0 0 12px #00ffff, 0 0 5px #ffffff;
-    letter-spacing: 0.5px;
+    text-shadow: 0 0 12px #00ffff;
 }
 
 .result-box.active {
     background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(255, 0, 127, 0.15));
     border: 2px solid #00ffff;
-    padding: 12px 15px;
+    padding: 10px 14px;
     border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3);
-    animation: popIn 0.3s ease-out forwards;
-}
-
-@keyframes popIn {
-    0% { transform: scale(0.9); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
 }
 </style>
 </head>
 <body>
 
-<!-- Background Audio Setup -->
 <audio id="bgAudio" loop>
 <source src="https://files.catbox.moe/dhueur.mp3" type="audio/mp3">
 </audio>
 
-<!-- နောက်ခံပျံသန်းနေသော ပုံများနှင့် အီမိုဂျီများ -->
 <div class="floating-container">
-    <div class="photo-wrapper" style="top: 10%; left: 12%; animation-delay: 0s;">
-        <span class="photo-emoji">💖</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-cyan">
-    </div>
-    <div class="photo-wrapper" style="top: 70%; left: 75%; animation-delay: 1.2s;">
-        <span class="photo-emoji">✨</span>
-        <img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-yellow">
-    </div>
-    <div class="photo-wrapper" style="top: 35%; left: 80%; animation-delay: 0.5s;">
-        <span class="photo-emoji">🔥</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-lime">
-    </div>
-    <div class="photo-wrapper" style="top: 75%; left: 15%; animation-delay: 2s;">
-        <span class="photo-emoji">🌸</span>
-        <img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-orange">
-    </div>
-    <div class="photo-wrapper" style="top: 55%; left: 30%; animation-delay: 0.8s;">
-        <span class="photo-emoji">🥰</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-purple">
-    </div>
-    <div class="photo-wrapper" style="top: 15%; left: 70%; animation-delay: 1.5s;">
-        <span class="photo-emoji">💫</span>
-        <img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-pink">
-    </div>
-    <div class="photo-wrapper" style="top: 45%; left: 10%; animation-delay: 2.2s;">
-        <span class="photo-emoji">🌷</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-cyan">
-    </div>
-    <div class="photo-wrapper" style="top: 12%; left: 40%; animation-delay: 0.3s;">
-        <span class="photo-emoji">⭐</span>
-        <img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-yellow">
-    </div>
-    <div class="photo-wrapper" style="top: 82%; left: 55%; animation-delay: 1.8s;">
-        <span class="photo-emoji">💌</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-lime">
-    </div>
-    <div class="photo-wrapper" style="top: 28%; left: 25%; animation-delay: 1s;">
-        <span class="photo-emoji">😻</span>
-        <img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-orange">
-    </div>
-    <div class="photo-wrapper" style="top: 78%; left: 40%; animation-delay: 0.7s;">
-        <span class="photo-emoji">🎀</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-purple">
-    </div>
-    <div class="photo-wrapper" style="top: 8%; left: 55%; animation-delay: 2.5s;">
-        <span class="photo-emoji">🧸</span>
-        <img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-pink">
-    </div>
-    <div class="photo-wrapper" style="top: 42%; left: 50%; animation-delay: 1.4s;">
-        <span class="photo-emoji">💘</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-cyan">
-    </div>
-    <div class="photo-wrapper" style="top: 62%; left: 88%; animation-delay: 0.2s;">
-        <span class="photo-emoji">🎉</span>
-        <img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-yellow">
-    </div>
-    <div class="photo-wrapper" style="top: 32%; left: 5%; animation-delay: 1.9s;">
-        <span class="photo-emoji">🌺</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-lime">
-    </div>
-    <div class="photo-wrapper" style="top: 88%; left: 30%; animation-delay: 0.6s;">
-        <span class="photo-emoji">⚡</span>
-        <img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-orange">
-    </div>
-    <div class="photo-wrapper" style="top: 22%; left: 88%; animation-delay: 2.1s;">
-        <span class="photo-emoji">🍬</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-purple">
-    </div>
-    <div class="photo-wrapper" style="top: 52%; left: 68%; animation-delay: 1.1s;">
-        <span class="photo-emoji">💋</span>
-        <img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-pink">
-    </div>
-    <div class="photo-wrapper" style="top: 18%; left: 82%; animation-delay: 0.4s;">
-        <span class="photo-emoji">💎</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-cyan">
-    </div>
-    <div class="photo-wrapper" style="top: 72%; left: 3%; animation-delay: 1.7s;">
-        <span class="photo-emoji">🍀</span>
-        <img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-yellow">
-    </div>
-    <div class="photo-wrapper" style="top: 48%; left: 38%; animation-delay: 2.3s;">
-        <span class="photo-emoji">🍫</span>
-        <img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="floating-photo border-lime">
-    </div>
+<div class="photo-wrapper" style="top: 10%; left: 12%; animation-delay: 0s;"><span class="photo-emoji">💖</span><img src="https://i.ibb.co/Kpmz3N7Z/IMG-7456.jpg" class="floating-photo border-cyan"></div>
+<div class="photo-wrapper" style="top: 70%; left: 75%; animation-delay: 1.2s;"><span class="photo-emoji">✨</span><img src="https://i.ibb.co/7txfbMMc/IMG-7453.jpg" class="floating-photo border-yellow"></div>
+<div class="photo-wrapper" style="top: 35%; left: 80%; animation-delay: 0.5s;"><span class="photo-emoji">🔥</span><img src="https://i.ibb.co/xd3MKS7/IMG-7455.jpg" class="floating-photo border-lime"></div>
+<div class="photo-wrapper" style="top: 75%; left: 15%; animation-delay: 2s;"><span class="photo-emoji">🌸</span><img src="https://i.ibb.co/wh2cr4j8/IMG-7452.jpg" class="floating-photo border-orange"></div>
+<div class="photo-wrapper" style="top: 55%; left: 30%; animation-delay: 0.8s;"><span class="photo-emoji">🥰</span><img src="https://i.ibb.co/JWSPgjS4/IMG-7454.jpg" class="floating-photo border-purple"></div>
+<div class="photo-wrapper" style="top: 15%; left: 70%; animation-delay: 1.5s;"><span class="photo-emoji">💫</span><img src="https://i.ibb.co/V0Zkhxm7/IMG-7333.jpg" class="floating-photo border-pink"></div>
+<div class="photo-wrapper" style="top: 45%; left: 10%; animation-delay: 2.2s;"><span class="photo-emoji">🌷</span><img src="https://i.ibb.co/DSXNdck/IMG-7208.png" class="floating-photo border-cyan"></div>
+<div class="photo-wrapper" style="top: 12%; left: 40%; animation-delay: 0.3s;"><span class="photo-emoji">⭐</span><img src="https://i.ibb.co/RXSty1S/IMG-7202.jpg" class="floating-photo border-yellow"></div>
+<div class="photo-wrapper" style="top: 82%; left: 55%; animation-delay: 1.8s;"><span class="photo-emoji">💌</span><img src="https://i.ibb.co/ynmCMtgD/IMG-7203.jpg" class="floating-photo border-lime"></div>
+<div class="photo-wrapper" style="top: 28%; left: 25%; animation-delay: 1s;"><span class="photo-emoji">😻</span><img src="https://i.ibb.co/V0tgjspR/IMG-7207.png" class="floating-photo border-orange"></div>
+<div class="photo-wrapper" style="top: 78%; left: 40%; animation-delay: 0.7s;"><span class="photo-emoji">🎀</span><img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-purple"></div>
+<div class="photo-wrapper" style="top: 8%; left: 55%; animation-delay: 2.5s;"><span class="photo-emoji">🧸</span><img src="https://i.ibb.co/ZpzRtHRk/IMG-6913.jpg" class="floating-photo border-pink"></div>
+<div class="photo-wrapper" style="top: 42%; left: 50%; animation-delay: 1.4s;"><span class="photo-emoji">💘</span><img src="https://i.ibb.co/cz1ZjDr/IMG-6973.jpg" class="floating-photo border-cyan"></div>
+<div class="photo-wrapper" style="top: 62%; left: 88%; animation-delay: 0.2s;"><span class="photo-emoji">🎉</span><img src="https://i.ibb.co/Dgz3bNyQ/IMG-6413.jpg" class="floating-photo border-yellow"></div>
+<div class="photo-wrapper" style="top: 32%; left: 5%; animation-delay: 1.9s;"><span class="photo-emoji">🌺</span><img src="https://i.ibb.co/1JQ6hGNW/camphoto-1594243340.jpg" class="floating-photo border-lime"></div>
+<div class="photo-wrapper" style="top: 88%; left: 30%; animation-delay: 0.6s;"><span class="photo-emoji">⚡</span><img src="https://i.ibb.co/99zvp6NX/camphoto-341603450.jpg" class="floating-photo border-orange"></div>
+<div class="photo-wrapper" style="top: 22%; left: 88%; animation-delay: 2.1s;"><span class="photo-emoji">🍬</span><img src="https://i.ibb.co/5hd03H1p/IMG-8256.jpg" class="floating-photo border-purple"></div>
+<div class="photo-wrapper" style="top: 52%; left: 68%; animation-delay: 1.1s;"><span class="photo-emoji">💋</span><img src="https://i.ibb.co/6RDrNLws/IMG-6977.jpg" class="floating-photo border-pink"></div>
+<div class="photo-wrapper" style="top: 18%; left: 82%; animation-delay: 0.4s;"><span class="photo-emoji">💎</span><img src="https://i.ibb.co/Pzxbfcxq/IMG-6388.jpg" class="floating-photo border-cyan"></div>
+<div class="photo-wrapper" style="top: 72%; left: 3%; animation-delay: 1.7s;"><span class="photo-emoji">🍀</span><img src="https://i.ibb.co/gLQFcGXG/camphoto-33463914.jpg" class="floating-photo border-yellow"></div>
+<div class="photo-wrapper" style="top: 48%; left: 38%; animation-delay: 2.3s;"><span class="photo-emoji">🍫</span><img src="https://i.ibb.co/KjT0QYxZ/IMG-5054.jpg" class="floating-photo border-lime"></div>
 </div>
 
-<!-- Welcome Page -->
 <div id="welcomePage" class="content-box">
 <h1 class="main-title">💞မေးခွန်းလေးတွေ ဖြေရအောင်💭</h1>
 <p class="love-quote">🍒💗 ယောက်ျားကိုလွမ်းတိုင်း ကြည့်နိုင်ဖို့ 🍇💞</p>
-
 <div class="control-box">
 <button class="primary-btn" onclick="startGame()">ဂိမ်းစရန်နှိပ်ပါ ပူတူးရေ 🎮</button>
 <button class="music-btn" onclick="toggleMusic()">🎵 သီချင်း ဖွင့်/ပိတ်</button>
 </div>
 </div>
 
-<!-- Game Page -->
 <div id="gamePage" class="content-box" style="display: none;">
 <h2 class="game-title">😜ဘယ်သူဖြစ်မယ်ထင်လဲ😝</h2>
-
-<div class="question-box" id="questionText">
-မေးခွန်း တင်ဆက်နေပါပြီ...
-</div>
+<div class="question-box" id="questionText">မေးခွန်း တင်ဆက်နေပါပြီ...</div>
 
 <div class="choices-container" id="choicesContainer">
+<!-- ယောက်ျားလေး (ကိုට) - အဖြူရောင် ဝတ်စုံ (ခေါင်းငြိမ်၊ လက်/ခြေ လှုပ်) -->
 <div class="choice-card" onclick="selectChoice('boy')">
-<img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" alt="Boy">
+<div class="avatar-container">
+<img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="heart-head" style="box-shadow: 0 0 25px #ffffff, 0 0 10px #00ffff; background: #ffffff;">
+<svg class="cartoon-body-full" viewBox="0 0 100 90">
+<!-- ညာဘက်လက် -->
+<g class="right-arm">
+<line x1="65" y1="12" x2="86" y2="30" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+<circle cx="88" cy="32" r="4.5" fill="#ffcc00"/>
+</g>
+<!-- ဘယ်ဘက်လက် -->
+<g class="left-arm">
+<line x1="35" y1="12" x2="14" y2="30" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+<circle cx="12" cy="32" r="4.5" fill="#ffcc00"/>
+</g>
+
+<!-- ကိုယ်ထည် -->
+<path d="M34,4 L66,4 L74,48 C74,48 78,54 68,54 L32,54 C22,54 26,48 26,48 Z" fill="#ffffff" stroke="#00ffff" stroke-width="2"/>
+<polygon points="50,15 58,15 54,42" fill="#ff007f"/>
+
+<!-- ညာဘက်ခြေထောက် -->
+<g class="right-leg">
+<line x1="61" y1="54" x2="61" y2="74" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="61" cy="78" rx="7" ry="4.5" fill="#39ff14" stroke="#00ffff" stroke-width="1.5"/>
+</g>
+<!-- ဘယ်ဘက်ခြေထောက် -->
+<g class="left-leg">
+<line x1="39" y1="54" x2="39" y2="74" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="39" cy="78" rx="7" ry="4.5" fill="#39ff14" stroke="#00ffff" stroke-width="1.5"/>
+</g>
+</svg>
+</div>
 <p>ကိုကို🐼</p>
 </div>
+
+<!-- မိန်းကလေး (မီးမီး) - အဝါရောင် ဂါဝန် (ခေါင်းငြိမ်၊ လက်/ခြေ လှုပ်) -->
 <div class="choice-card" onclick="selectChoice('girl')">
-<img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" alt="Girl">
+<div class="avatar-container">
+<img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="heart-head" style="box-shadow: 0 0 25px #ffcc00, 0 0 10px #ff007f; background: #ffcc00;">
+<svg class="cartoon-body-full" viewBox="0 0 100 90">
+<!-- ညာဘက်လက် -->
+<g class="right-arm">
+<line x1="65" y1="12" x2="86" y2="30" stroke="#ffcc00" stroke-width="4.5" stroke-linecap="round"/>
+<circle cx="88" cy="32" r="4.5" fill="#00ffff"/>
+</g>
+<!-- ဘယ်ဘက်လက် -->
+<g class="left-arm">
+<line x1="35" y1="12" x2="14" y2="30" stroke="#ffcc00" stroke-width="4.5" stroke-linecap="round"/>
+<circle cx="12" cy="32" r="4.5" fill="#00ffff"/>
+</g>
+
+<!-- ကိုယ်ထည် -->
+<path d="M35,4 L65,4 C78,42 84,52 84,52 L16,52 C16,52 22,42 35,4 Z" fill="#ffcc00" stroke="#ff007f" stroke-width="2"/>
+<circle cx="50" cy="24" r="3.5" fill="#00ffff"/>
+<circle cx="50" cy="38" r="3.5" fill="#00ffff"/>
+
+<!-- ညာဘက်ခြေထောက် -->
+<g class="right-leg">
+<line x1="61" y1="52" x2="61" y2="74" stroke="#ffcc00" stroke-width="4.5" stroke-linecap="round"/>
+<ellipse cx="61" cy="78" rx="7" ry="4.5" fill="#ff007f" stroke="#ffffff" stroke-width="1.5"/>
+</g>
+<!-- ဘယ်ဘက်ခြေထောက် -->
+<g class="left-leg">
+<line x1="39" y1="52" x2="39" y2="74" stroke="#ffcc00" stroke-width="4.5" stroke-linecap="round"/>
+<ellipse cx="39" cy="78" rx="7" ry="4.5" fill="#ff007f" stroke="#ffffff" stroke-width="1.5"/>
+</g>
+</svg>
+</div>
 <p>မီးမီး🐹</p>
 </div>
 </div>
 
 <div class="result-box" id="resultText"></div>
-
 <button class="primary-btn" id="nextBtn" onclick="nextQuestion()" style="display: none;">နောက်ထပ် မေးခွန်း ➡️</button>
 </div>
 
 <script>
 const questions = [
-"ဘယ်သူက အစားပိုစားလဲ? 🍕",
-"ဘယ်သူက အရင် စကြိုက်တာလဲ? 💕",
-"ဘယ်သူက ဒေါသပိုကြီးလဲ? 🦩",
-"ဘယ်သူက အိပ်ရာထနောက်ကျလဲ? 😴",
-"ဘယ်သူက ဖုန်းကို ပိုစွဲလမ်းလဲ? 📱",
-"ဘယ်သူက စကားပိုပြောလဲ? 🗣️",
-"ဘယ်သူက အချိုပိုကြိုက်လဲ? 🍰",
-"ဘယ်သူက အရင်အိပ်​ပျော်တာလဲ 😒",
-"ဘယ်သူက အိပ်ပိုရင်ကြာလဲ? 🥴",
-"ဘယ်သူက ရုပ်ရှင်ကြည့်ရင်း အိပ်လဲ?🎬",
-"ဘယ်သူက ပိုဆိုးသွမ်းလဲ? 🐒",
-"ဘယ်သူက အဝတ်အစားရွေးတာ ပိုကြာလဲ? 👕",
-"ဘယ်သူက ဓာတ်ပုံရိုက်ရင် ပိုပိုစိတတ်လဲ? 📸",
-"ဘယ်သူက ပိုပျင်းရိတတ်လဲ? 🛋️",
-"ဘယ်သူက ငွေစုတာ ပိုတော်လဲ? 💰",
-"ဘယ်သူက လမ်းလျှောက်ရင်/ကားမောင်းရင် ပိုသတိထားလဲ? 🚗",
-"ဘယ်သူကစာပြန်နောက်ကျလဲ? ⏳",
-"ဘယ်သူက မျက်နှာငယ်ပြပြီး ချွဲတတ်လဲ? 🥺",
-"ဘယ်သူက အစားအသောက် ရွေးတတ်လဲ? 🍔",
-"ဘယ်သူက ချက်ပြုတ်ရတာ ပိုဝါသနာပါလဲ? 🍳",
-"ဘယ်သူက သီချင်းဆိုရင် ပိုသံစဉ်လွဲတတ်လဲ? 🎤",
-"ဘယ်သူက အိပ်မက်ဆိုးမက်ရင် အရင်လန့်နိုးတတ်လဲ? 🌙",
-"ဘယ်သူက ပိုအိပ်ရေးဝတတ်လဲ? 🛏️",
-"ဘယ်သူက အရာရာကို အရင်စတင်ပြောတတ်လဲ? 💬",
-"ဘယ်သူက  ရိုမန်းတစ်ဆန်လဲ? 🌹",
-"ဘယ်သူက ရယ်စရာမပြောဘဲ ကိုယ်တိုင် အရင်ရယ်တတ်လဲ? 😂",
-"ဘယ်သူက ခရီးသွားရင် ပစ္စည်းပိုဆောင်တတ်လဲ? 🧳",
-"ဘယ်သူက ကော်ဖီ (သို့) လက်ဖက်ရည် ပိုသောက်လဲ? ☕",
-"ဘယ်သူကအပြစ်လုပ်ထားရင်မျက်နှာပျက်​နေတတ်လဲ? 🤭",
-"ဘယ်သူက ဒီကမ္ဘာပေါ်မှာ အချစ်ရဆုံးနဲ့ အပျော်ဆုံးဖြစ်စေမယ့်သူလဲ? ❤️"
+"ဘယ်သူက အစားပိုစားလဲ? 🍕", "ဘယ်သူက အရင် စကြိုက်တာလဲ? 💕", "ဘယ်သူက ဒေါသပိုကြီးလဲ? 🦩",
+"ဘယ်သူက အိပ်ရာထနောက်ကျလဲ? 😴", "ဘယ်သူက ဖုန်းကို ပိုစွဲလမ်းလဲ? 📱", "ဘယ်သူက စကားပိုပြောလဲ? 🗣️",
+"ဘယ်သူက အချိုပိုကြိုက်လဲ? 🍰", "ဘယ်သူက အရင်အိပ်​ပျော်တာလဲ 😒", "ဘယ်သူက အိပ်ပိုရင်ကြာလဲ? 🥴",
+"ဘယ်သူက ရုပ်ရှင်ကြည့်ရင်း အိပ်လဲ?🎬", "ဘယ်သူက ပိုဆိုးသွမ်းလဲ? 🐒", "ဘယ်သူက အဝတ်အစားရွေးတာ ပိုကြာလဲ? 👕",
+"ဘယ်သူက ဓာတ်ပုံရိုက်ရင် ပိုပိုစိတတ်လဲ? 📸", "ဘယ်သူက ပိုပျင်းရိတတ်လဲ? 🛋️", "ဘယ်သူက ငွေစုတာ ပိုတော်လဲ? 💰",
+"ဘယ်သူက လမ်းလျှောက်ရင်/ကားမောင်းရင် ပိုသတိထားလဲ? 🚗", "ဘယ်သူကစာပြန်နောက်ကျလဲ? ⏳", "ဘယ်သူက မျက်နှာငယ်ပြပြီး ချွဲတတ်လဲ? 🥺",
+"ဘယ်သူက အစားအသောက် ရွေးတတ်လဲ? 🍔", "ဘယ်သူက ချက်ပြုတ်ရတာ ပိုဝါသနာပါလဲ? 🍳", "ဘယ်သူက သီချင်းဆိုရင် ပိုသံစဉ်လွဲတတ်လဲ? 🎤",
+"ဘယ်သူက အိပ်မက်ဆိုးမက်ရင် အရင်လန့်နိုးတတ်လဲ? 🌙", "ဘယ်သူက ပိုအိပ်ရေးဝတတ်လဲ? 🛏️", "ဘယ်သူက အရာရာကို အရင်စတင်ပြောတတ်လဲ? 💬",
+"ဘယ်သူက  ရိုမန်းတစ်ဆန်လဲ? 🌹", "ဘယ်သူက ရယ်စရာမပြောဘဲ ကိုယ်တိုင် အရင်ရယ်တတ်လဲ? 😂", "ဘယ်သူက ခရီးသွားရင် ပစ္စည်းပိုဆောင်တတ်လဲ? 🧳",
+"ဘယ်သူက ကော်ဖီ (သို့) လက်ဖက်ရည် ပိုသောက်လဲ? ☕", "ဘယ်သူကအပြစ်လုပ်ထားရင်မျက်နှာပျက်​နေတတ်လဲ? 🤭", "ဘယ်သူက ဒီကမ္ဘာပေါ်မှာ အချစ်ရဆုံးနဲ့ အပျော်ဆုံးဖြစ်စေမယ့်သူလဲ? ❤️"
 ];
 
 let currentQuestionIndex = 0;
@@ -407,13 +426,11 @@ const bgAudio = document.getElementById('bgAudio');
 let isMusicPlaying = false;
 
 function startGame() {
-bgAudio.play().catch(error => {
-console.log("Audio play blocked:", error);
-});
+bgAudio.play().catch(error => { console.log("Audio play blocked:", error); });
 isMusicPlaying = true;
-
 welcomePage.style.display = 'none';
 gamePage.style.display = 'block';
+document.body.classList.add('room-active');
 loadQuestion();
 }
 
@@ -447,13 +464,8 @@ loadQuestion();
 }
 
 function toggleMusic() {
-if (isMusicPlaying) {
-bgAudio.pause();
-isMusicPlaying = false;
-} else {
-bgAudio.play();
-isMusicPlaying = true;
-}
+if (isMusicPlaying) { bgAudio.pause(); isMusicPlaying = false; }
+else { bgAudio.play(); isMusicPlaying = true; }
 }
 </script>
 </body>
